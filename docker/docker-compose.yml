@@ -1,0 +1,64 @@
+services:
+  app_jobleads:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        USER_ID: "${WWWUSER:-1000}"
+        GROUP_ID: "${WWWGROUP:-1000}"
+        USER: "${USER:-whoami}"
+    container_name: app_jobleads
+    restart: always
+    working_dir: /var/www/
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "9003:9003"
+    volumes:
+      - ../src:/var/www
+      - ./local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - jobleads-network
+
+  nginx_jobleads:
+    image: nginx:alpine
+    container_name: nginx_jobleads
+    restart: always
+    ports:
+      - "8000:80"
+    volumes:
+      - ../src:/var/www
+      - ./nginx:/etc/nginx/conf.d/
+    networks:
+      - jobleads-network
+
+  db_jobleads:
+    image: mysql:8.0
+    container_name: db_jobleads
+    restart: always
+    volumes:
+      - "./storage/mysql:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 3306:3306
+    networks:
+      - jobleads-network
+  pma_jobleads:
+    container_name: pma_jobleads
+    image: phpmyadmin:5.1
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db_jobleads
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+      - PMA_PORT=3306
+        # depends_on:
+        #- jobleads.db
+    ports:
+      - 8888:80
+    networks:
+      - jobleads-network
+networks:
+  jobleads-network:
+    driver: bridge
