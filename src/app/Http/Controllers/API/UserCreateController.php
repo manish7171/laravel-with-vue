@@ -15,15 +15,15 @@ final class UserCreateController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'firstName' => 'required|max:255',
-            'lastName'  => 'required|max:255',
+            'firstname' => 'required|max:255',
+            'lastname'  => 'required|max:255',
             'email'     => 'required|unique:users,user_email|max:255',
         ]);
 
         $newUser = new User();
 
-        $newUser->first_name = $validated['firstName'];
-        $newUser->last_name  = $validated['lastName'];
+        $newUser->first_name = $validated['firstname'];
+        $newUser->last_name  = $validated['lastname'];
         $newUser->user_email = $validated['email'];
 
         $newUser->save();
