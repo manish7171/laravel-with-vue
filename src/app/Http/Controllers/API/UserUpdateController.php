@@ -15,8 +15,8 @@ final class UserUpdateController extends Controller
     public function __invoke(Request $request, int $userId): JsonResponse
     {
         $validated = $request->validate([
-            'firstName' => 'required|max:255',
-            'lastName'  => 'required|max:255',
+            'firstname' => 'required|max:255',
+            'lastname'  => 'required|max:255',
             'email'     => 'required|unique:users,user_email,' . $userId . '|max:255',
         ]);
 
@@ -27,8 +27,8 @@ final class UserUpdateController extends Controller
         }
 
         $user->update([
-            "first_name" => $validated['firstName'],
-            "last_name" => $validated['lastName'],
+            "first_name" => $validated['firstname'],
+            "last_name" => $validated['lastname'],
             "user_email" => $validated['email'],
         ]);
 

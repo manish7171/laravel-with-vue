@@ -4,14 +4,16 @@ import axios from "axios";
 export default function useUsers() {
     const users = ref({});
     const errors = ref({});
+    const updateErrors = ref({});
+
     const getUsers = async () => {
         axios.get("/api/users").then((response) => {
             users.value = response.data;
         });
     };
 
-    const deleteUser = async (id) => {
-        axios.delete("/api/user/" + id);
+    const deleteUser = async (data) => {
+        axios.delete("/api/user/" + data.id);
     };
 
     const storeUser = async (data) => {
@@ -22,5 +24,22 @@ export default function useUsers() {
             return e;
         });
     };
-    return { users, getUsers, deleteUser, storeUser, errors };
+
+    const updateUser = async (data) => {
+        axios.put("/api/user/" + data.id, data).catch((e) => {
+            if (e.response.status === 422) {
+                updateErrors.value = e.response.data.errors;
+            }
+            return e;
+        });
+    };
+    return {
+        users,
+        getUsers,
+        storeUser,
+        errors,
+        updateUser,
+        updateErrors,
+        deleteUser,
+    };
 }
