@@ -9,24 +9,33 @@
                 <table class="table table-bordered table-striped fs--1 mb-0">
                     <thead class="bg-200 text-900">
                         <tr>
-                            <th class="sort" data-sort="name">Name</th>
                             <th class="sort" data-sort="name">First Name</th>
                             <th class="sort" data-sort="name">Last Name</th>
                             <th class="sort desc" data-sort="email">Email</th>
-                            <th class="sort" data-sort="age">Age</th>
                             <th class=""></th>
                         </tr>
                     </thead>
                     <tbody class="list">
-                        <tr>
-                            <td class="name">Tony</td>
-                            <td class="email">tony@example.com</td>
-                            <td class="age">30</td>
                         <tr v-for="user in users.data">
                             <td class="name">{{ user.firstName }}</td>
                             <td class="name">{{ user.lastName }}</td>
                             <td class="email">{{ user.email }}</td>
                             <td class="ops">
+                                <div class="d-flex gap-3">
+                                    <button
+                                        class="btn btn-primary"
+                                        @click.prevent="edit(1)"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        class="btn btn-danger"
+                                        @click.prevent="removeUser(user.id)"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -89,8 +98,18 @@
 <script setup>
 import { onMounted } from "vue";
 import useUsers from "../composables/users";
-const { users, getUsers } = useUsers();
+const { users, getUsers, deleteUser } = useUsers();
 onMounted(() => {
     getUsers();
 });
+
+const removeUser = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this user?")) {
+        return;
+    }
+
+    await deleteUser(id);
+
+    await getUsers();
+};
 </script>
