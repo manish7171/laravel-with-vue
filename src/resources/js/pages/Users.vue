@@ -10,8 +10,11 @@
                     <thead class="bg-200 text-900">
                         <tr>
                             <th class="sort" data-sort="name">Name</th>
+                            <th class="sort" data-sort="name">First Name</th>
+                            <th class="sort" data-sort="name">Last Name</th>
                             <th class="sort desc" data-sort="email">Email</th>
                             <th class="sort" data-sort="age">Age</th>
+                            <th class=""></th>
                         </tr>
                     </thead>
                     <tbody class="list">
@@ -19,6 +22,11 @@
                             <td class="name">Tony</td>
                             <td class="email">tony@example.com</td>
                             <td class="age">30</td>
+                        <tr v-for="user in users.data">
+                            <td class="name">{{ user.firstName }}</td>
+                            <td class="name">{{ user.lastName }}</td>
+                            <td class="email">{{ user.email }}</td>
+                            <td class="ops">
                         </tr>
                     </tbody>
                 </table>
