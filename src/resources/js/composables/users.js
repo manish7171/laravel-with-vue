@@ -4,12 +4,21 @@ import axios from "axios";
 export default function useUsers() {
     const users = ref({});
     const errors = ref({});
+    const usersCount = ref(0);
     const updateErrors = ref({});
 
-    const getUsers = async (sort = null, search = null) => {
+    const getUsers = async (page = 1, sort = "", search = "") => {
         axios
-            .get("/api/users?sort=" + sort + "&search=" + search)
+            .get(
+                "/api/users?page=" +
+                    page +
+                    "&sort=" +
+                    sort +
+                    "&search=" +
+                    search,
+            )
             .then((response) => {
+                usersCount.value = response.data.meta.total;
                 users.value = response.data;
             });
     };
@@ -43,6 +52,7 @@ export default function useUsers() {
     return {
         users,
         getUsers,
+        usersCount,
         storeUser,
         errors,
         updateUser,

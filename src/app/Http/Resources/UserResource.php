@@ -20,7 +20,7 @@ final class UserResource extends JsonResource
             'firstName' => $this->resource->first_name,
             'lastName' => $this->resource->last_name,
             'email' => $this->resource->user_email,
-            'createdAt' => date("d-m-Y", strtotime($this->resource->created_at))
+            'createdAt' => date("Y-m-d", strtotime($this->resource->created_at))
         ];
     }
 }

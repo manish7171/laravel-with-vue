@@ -1,21 +1,37 @@
 <script setup>
-import { reactive, onMounted } from "vue";
-import { watch } from "vue";
+import { ref, reactive, onMounted, watch } from "vue";
 import useUsers from "../composables/users";
 import router from "../router";
 import { useRoute } from "vue-router";
+import { Bootstrap5Pagination } from "laravel-vue-pagination";
 // ...
 
+const route = useRoute();
 //import NewUser from "../components/modals/NewUser.vue";
 const {
     users,
     getUsers,
+    usersCount,
     deleteUser,
     storeUser,
     errors,
     updateUser,
     updateErrors,
 } = useUsers();
+
+const searchQuery = ref(null);
+
+const search = () => {
+    const sortby = route.query.sort ?? "";
+    const page = route.query.page ?? 1;
+    const searchValue = searchQuery.value;
+
+    router.push({
+        path: "/frontend",
+        query: { page: page, sort: sortby, search: searchValue },
+    });
+    getUsers(page, sortby, searchValue);
+};
 
 const form = reactive({
     firstname: "",
@@ -67,9 +83,13 @@ onMounted(() => {
     state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
     state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
     state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
-    const route = useRoute();
+    searchQuery.value = route.query.search ?? "";
 
-    getUsers(route.query.sort ?? null);
+    getUsers(
+        route.query.page ?? 1,
+        route.query.sort ?? "",
+        route.query.search ?? "",
+    );
 });
 
 function openNewUserModal() {
@@ -109,31 +129,68 @@ function closeDeleteUserModal() {
     state.modal_delete_user.hide();
 }
 
-async function sortBy(sortby) {
-    router.push({ path: "/frontend", query: { sort: sortby } });
-    await getUsers(sortby);
+const handleInput = debounce((event) => {
+    search();
+}, 300);
+
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
 }
+async function sortBy(sortby) {
+    const searchBy = route.query.search ?? "";
+    const page = route.query.page ?? 1;
+    router.push({
+        path: "/frontend",
+        query: { page: page, sort: sortby, search: searchBy },
+    });
+    await getUsers(page, sortby, searchBy);
+}
+
+const paginate = async (page) => {
+    const searchBy = route.query.search ?? "";
+    const sortby = route.query.sort ?? "";
+    router.push({
+        path: "/frontend",
+        query: { page: page, sort: sortby, search: searchBy },
+    });
+    await getUsers(page, sortby, searchBy);
+};
 </script>
 <template>
     <div class="container">
         <h1>User Listing</h1>
-        <div>{{ users }}</div>
-        <!-- <NewUser
-   //     id="modal_new_user"
-   //     :submit_form="formOnSubmit"
-   // ></NewUser> -->
+        <div class="d-flex justify-content-between">
+            <button
+                type="button"
+                class="btn btn-primary"
+                @click="openNewUserModal"
+            >
+                Create New User
+            </button>
+            <div>
+                <input
+                    type="text"
+                    class="form-control float-end"
+                    @input="handleInput"
+                    placeholder="Quick Search.."
+                    v-model="searchQuery"
+                    aria-label="Search"
+                    aria-describedby="search-btn"
+                />
+            </div>
+        </div>
+        <div style="margin: 10px 0"></div>
         <div
             id="tableExample"
             data-list='{"valueNames":["name","email","age"],"page":5,"pagination":true}'
         >
-            <div class="table-responsive scrollbar">
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    @click="openNewUserModal"
-                >
-                    Create New User
-                </button>
+            <div class="table-responsive">
                 <table class="table table-bordered table-striped fs--1 mb-0">
                     <thead class="bg-200 text-900">
                         <tr>
@@ -147,7 +204,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('fname_desc')
+                                                            sortBy('fname_asc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -162,7 +219,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('fname_asc')
+                                                            sortBy('fname_desc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -184,7 +241,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('lname_desc')
+                                                            sortBy('lname_asc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -199,7 +256,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('lname_asc')
+                                                            sortBy('lname_desc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -221,7 +278,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('email_desc')
+                                                            sortBy('email_asc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -236,7 +293,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('email_asc')
+                                                            sortBy('email_desc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -258,7 +315,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('date_desc')
+                                                            sortBy('date_asc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -273,7 +330,7 @@ async function sortBy(sortby) {
                                                 <span>
                                                     <button
                                                         @click="
-                                                            sortBy('date_asc')
+                                                            sortBy('date_desc')
                                                         "
                                                         style="rotate: 90deg"
                                                     >
@@ -288,7 +345,7 @@ async function sortBy(sortby) {
                             <th class=""></th>
                         </tr>
                     </thead>
-                    <tbody class="list">
+                    <tbody class="list" v-if="usersCount > 0">
                         <tr v-for="user in users.data">
                             <td class="name">{{ user.firstName }}</td>
                             <td class="name">{{ user.lastName }}</td>
@@ -312,62 +369,20 @@ async function sortBy(sortby) {
                             </td>
                         </tr>
                     </tbody>
+                    <tbody class="list" v-else>
+                        <tr>
+                            <td colspan="5">No results found!</td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
-            <div class="row align-items-center mt-3">
-                <div class="pagination d-none">
-                    <li class="active">
-                        <button
-                            class="page"
-                            type="button"
-                            data-i="1"
-                            data-page="5"
-                        >
-                            1
-                        </button>
-                    </li>
-                    <li>
-                        <button
-                            class="page"
-                            type="button"
-                            data-i="2"
-                            data-page="5"
-                        >
-                            2
-                        </button>
-                    </li>
-                    <li>
-                        <button
-                            class="page"
-                            type="button"
-                            data-i="3"
-                            data-page="5"
-                        >
-                            3
-                        </button>
-                    </li>
-                </div>
-                <div class="col"></div>
-                <div class="col-auto d-flex">
-                    <button
-                        class="btn btn-sm btn-primary disabled"
-                        type="button"
-                        data-list-pagination="prev"
-                        disabled=""
-                    >
-                        <span>Previous</span>
-                    </button>
-                    <button
-                        class="btn btn-sm btn-primary px-4 ms-2"
-                        type="button"
-                        data-list-pagination="next"
-                    >
-                        <span>Next</span>
-                    </button>
-                </div>
-            </div>
+            <Bootstrap5Pagination
+                :data="users"
+                @pagination-change-page="paginate"
+            />
         </div>
     </div>
+
     <!-- New User Modal-->
     <div
         class="modal fade"
