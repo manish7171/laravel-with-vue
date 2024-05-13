@@ -6,10 +6,12 @@ export default function useUsers() {
     const errors = ref({});
     const updateErrors = ref({});
 
-    const getUsers = async () => {
-        axios.get("/api/users").then((response) => {
-            users.value = response.data;
-        });
+    const getUsers = async (sort = null, search = null) => {
+        axios
+            .get("/api/users?sort=" + sort + "&search=" + search)
+            .then((response) => {
+                users.value = response.data;
+            });
     };
 
     const deleteUser = async (data) => {
@@ -17,12 +19,17 @@ export default function useUsers() {
     };
 
     const storeUser = async (data) => {
-        axios.post("/api/user/", data).catch((e) => {
-            if (e.response.status === 422) {
-                errors.value = e.response.data.errors;
-            }
-            return e;
-        });
+        axios
+            .post("/api/user/", data)
+            .then((response) => {
+                return response;
+            })
+            .catch((e) => {
+                if (e.response.status === 422) {
+                    errors.value = e.response.data.errors;
+                }
+                return e;
+            });
     };
 
     const updateUser = async (data) => {

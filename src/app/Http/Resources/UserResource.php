@@ -19,8 +19,8 @@ final class UserResource extends JsonResource
             'id' => $this->resource->id,
             'firstName' => $this->resource->first_name,
             'lastName' => $this->resource->last_name,
-            'email' => $this->resource->user_email
+            'email' => $this->resource->user_email,
+            'createdAt' => date("d-m-Y", strtotime($this->resource->created_at))
         ];
-        //return parent::toArray($request);
     }
 }

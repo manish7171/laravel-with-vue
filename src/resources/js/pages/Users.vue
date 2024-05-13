@@ -1,6 +1,127 @@
+<script setup>
+import { reactive, onMounted } from "vue";
+import { watch } from "vue";
+import useUsers from "../composables/users";
+import router from "../router";
+import { useRoute } from "vue-router";
+// ...
+
+//import NewUser from "../components/modals/NewUser.vue";
+const {
+    users,
+    getUsers,
+    deleteUser,
+    storeUser,
+    errors,
+    updateUser,
+    updateErrors,
+} = useUsers();
+
+const form = reactive({
+    firstname: "",
+    lastname: "",
+    email: "",
+});
+
+const editForm = reactive({
+    firstname: "",
+    lastname: "",
+    email: "",
+});
+
+const deleteForm = reactive({
+    id: "",
+});
+
+const state = reactive({
+    modal_new_user: null,
+    modal_edit_user: null,
+    modal_delete_user: null,
+});
+
+const formOnSubmit = async (event) => {
+    await storeUser({ ...form });
+    if (Object.values(errors.value).length === 0) {
+        closeNewUserModal();
+        await getUsers();
+    }
+};
+
+const updateFormOnSubmit = async () => {
+    await updateUser({ ...editForm });
+    if (Object.values(updateErrors.value).length === 0) {
+        closeEditUserModal();
+        await getUsers();
+    }
+};
+
+const deleteFormOnSubmit = async () => {
+    await deleteUser({ ...deleteForm });
+    if (Object.values(updateErrors.value).length === 0) {
+        closeDeleteUserModal();
+        await getUsers();
+    }
+};
+
+onMounted(() => {
+    state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
+    state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
+    state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
+    const route = useRoute();
+
+    getUsers(route.query.sort ?? null);
+});
+
+function openNewUserModal() {
+    state.modal_new_user.show();
+}
+
+function filterUsersById(id) {
+    return users.value.data.filter((item) => item.id === id);
+}
+
+function openEditUserModal(id) {
+    const editUser = filterUsersById(id);
+
+    editForm.firstname = editUser[0].firstName;
+    editForm.lastname = editUser[0].lastName;
+    editForm.email = editUser[0].email;
+    editForm.id = editUser[0].id;
+
+    state.modal_edit_user.show();
+}
+
+function openDeleteUserModal(id) {
+    deleteForm.id = id;
+
+    state.modal_delete_user.show();
+}
+
+function closeNewUserModal() {
+    state.modal_new_user.hide();
+}
+
+function closeEditUserModal() {
+    state.modal_edit_user.hide();
+}
+
+function closeDeleteUserModal() {
+    state.modal_delete_user.hide();
+}
+
+async function sortBy(sortby) {
+    router.push({ path: "/frontend", query: { sort: sortby } });
+    await getUsers(sortby);
+}
+</script>
 <template>
     <div class="container">
         <h1>User Listing</h1>
+        <div>{{ users }}</div>
+        <!-- <NewUser
+   //     id="modal_new_user"
+   //     :submit_form="formOnSubmit"
+   // ></NewUser> -->
         <div
             id="tableExample"
             data-list='{"valueNames":["name","email","age"],"page":5,"pagination":true}'
@@ -16,9 +137,154 @@
                 <table class="table table-bordered table-striped fs--1 mb-0">
                     <thead class="bg-200 text-900">
                         <tr>
-                            <th class="sort" data-sort="name">First Name</th>
-                            <th class="sort" data-sort="name">Last Name</th>
-                            <th class="sort desc" data-sort="email">Email</th>
+                            <th class="sort" data-sort="name">
+                                <div class="row">
+                                    <div class="col">First Name</div>
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('fname_desc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8250;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('fname_asc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8249;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="sort" data-sort="name">
+                                <div class="row">
+                                    <div class="col">Last Name</div>
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('lname_desc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8250;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('lname_asc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8249;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="sort desc" data-sort="email">
+                                <div class="row">
+                                    <div class="col">Email</div>
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('email_desc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8250;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('email_asc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8249;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
+                            <th class="">
+                                <div class="row">
+                                    <div class="col">Created Date</div>
+                                    <div class="col">
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('date_desc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8250;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-9"></div>
+                                            <div class="col-3">
+                                                <span>
+                                                    <button
+                                                        @click="
+                                                            sortBy('date_asc')
+                                                        "
+                                                        style="rotate: 90deg"
+                                                    >
+                                                        &#8249;
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th>
                             <th class=""></th>
                         </tr>
                     </thead>
@@ -27,6 +293,7 @@
                             <td class="name">{{ user.firstName }}</td>
                             <td class="name">{{ user.lastName }}</td>
                             <td class="email">{{ user.email }}</td>
+                            <td class="email">{{ user.createdAt }}</td>
                             <td class="ops">
                                 <div class="d-flex gap-3">
                                     <button
@@ -369,112 +636,3 @@
         </div>
     </div>
 </template>
-<script setup>
-import { reactive, onMounted } from "vue";
-
-import useUsers from "../composables/users";
-import Confirm from "../components/modals/Confirm.vue";
-
-const {
-    users,
-    getUsers,
-    deleteUser,
-    storeUser,
-    errors,
-    updateUser,
-    updateErrors,
-} = useUsers();
-
-const form = reactive({
-    firstname: "",
-    lastname: "",
-    email: "",
-});
-
-const editForm = reactive({
-    firstname: "",
-    lastname: "",
-    email: "",
-});
-
-const deleteForm = reactive({
-    id: "",
-});
-
-const state = reactive({
-    modal_new_user: null,
-    modal_edit_user: null,
-    modal_delete_user: null,
-});
-
-const formOnSubmit = async (event) => {
-    await storeUser({ ...form });
-    if (Object.values(errors.value).length === 0) {
-        closeNewUserModal();
-        await getUsers();
-    }
-};
-
-const updateFormOnSubmit = async () => {
-    await updateUser({ ...editForm });
-    if (Object.values(updateErrors.value).length === 0) {
-        closeEditUserModal();
-        await getUsers();
-    }
-};
-
-const deleteFormOnSubmit = async () => {
-    await deleteUser({ ...deleteForm });
-    closeDeleteUserModal();
-    await getUsers();
-    // if (Object.values(updateErrors.value).length === 0) {
-    //     closeDeleteUserModal();
-    //     await getUsers();
-    // }
-};
-
-onMounted(() => {
-    state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
-    state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
-    state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
-
-    getUsers();
-});
-
-function openNewUserModal() {
-    state.modal_new_user.show();
-}
-
-function filterUsersById(id) {
-    return users.value.data.filter((item) => item.id === id);
-}
-
-function openEditUserModal(id) {
-    const editUser = filterUsersById(id);
-
-    editForm.firstname = editUser[0].firstName;
-    editForm.lastname = editUser[0].lastName;
-    editForm.email = editUser[0].email;
-    editForm.id = editUser[0].id;
-
-    state.modal_edit_user.show();
-}
-
-function openDeleteUserModal(id) {
-    deleteForm.id = id;
-
-    state.modal_delete_user.show();
-}
-
-function closeNewUserModal() {
-    state.modal_new_user.hide();
-}
-
-function closeEditUserModal() {
-    state.modal_edit_user.hide();
-}
-
-function closeDeleteUserModal() {
-    state.modal_delete_user.hide();
-}
-</script>
