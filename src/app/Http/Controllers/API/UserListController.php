@@ -68,12 +68,8 @@ final class UserListController extends Controller
                     $usersQuery->orderBy('user_email', 'asc');
                 }
 
-                if ('email_desc' == $request->get('sort')) {
-                    $usersQuery->orderBy('user_email', 'desc');
-                }
-
                 if ('date_asc' == $request->get('sort')) {
-                    $usersQuery->orderBy('user_email', 'asc');
+                    $usersQuery->orderBy('created_at', 'asc');
                 }
 
                 if ('date_desc' == $request->get('sort')) {

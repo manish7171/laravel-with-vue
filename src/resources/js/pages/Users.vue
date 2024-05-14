@@ -1,24 +1,20 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import useUsers from "../composables/users";
 import router from "../router";
 import { useRoute } from "vue-router";
 import { Bootstrap5Pagination } from "laravel-vue-pagination";
+import axios from "axios";
 // ...
 
 const route = useRoute();
 //import NewUser from "../components/modals/NewUser.vue";
-const {
-    users,
-    isLoading,
-    getUsers,
-    usersCount,
-    storeUser,
-    storeUserErrors,
-    updateUser,
-    updateErrors,
-    deleteUser,
-} = useUsers();
+const { users, isLoading, getUsers, usersCount } = useUsers();
+
+//const testStoreErrors = ref({});
+const storeUserErrors = ref({});
+
+const updateErrors = ref({});
 
 // for general quick search input
 const quickSearchQuery = ref("");
@@ -28,6 +24,143 @@ const columnNameSearchQuery = ref("");
 
 //value for column name for eg. first_name = test
 const columnValueSearchQuery = ref("");
+
+//ref to column search input fields
+const searchInputFirstname = ref("");
+const searchInputLastname = ref("");
+const searchInputEmail = ref("");
+const searchInputDate = ref("");
+
+const form = reactive({
+    firstname: "",
+    lastname: "",
+    email: "",
+});
+
+const editForm = reactive({
+    id: "",
+    firstname: "",
+    lastname: "",
+    email: "",
+});
+
+const deleteForm = reactive({
+    id: "",
+});
+
+const state = reactive({
+    modal_new_user: null,
+    modal_edit_user: null,
+    modal_delete_user: null,
+});
+
+const listUsers = async () => {
+    const page = route.query.page ?? 1;
+    const sortby = route.query.sort ?? "";
+    const searchValue = route.query.search ?? quickSearchQuery.value;
+    const searchColumnName =
+        route.query.search_col ?? columnNameSearchQuery.value;
+    const searchColumnValue =
+        route.query.search_col_val ?? columnValueSearchQuery.value;
+
+    await getUsers(
+        page,
+        sortby,
+        searchColumnName,
+        searchColumnValue,
+        searchValue,
+    );
+};
+
+const formOnSubmit = async (event) => {
+    axios
+        .post("/api/user/", { ...form })
+        .then((response) => {
+            listUsers();
+            closeNewUserModal();
+        })
+        .catch((e) => {
+            if (e.response.status === 422) {
+                storeUserErrors.value = e.response.data.errors;
+            }
+        });
+};
+
+const updateFormOnSubmit = async (event) => {
+    const data = { ...editForm };
+    axios
+        .put("/api/user/" + data.id, data)
+        .then((response) => {
+            listUsers();
+            closeEditUserModal();
+        })
+        .catch((e) => {
+            if (e.response.status === 422) {
+                updateErrors.value = e.response.data.errors;
+            }
+        });
+};
+
+const deleteFormOnSubmit = async () => {
+    const data = { ...deleteForm };
+    await axios.delete("/api/user/" + data.id);
+    listUsers();
+    closeDeleteUserModal();
+};
+
+const handleQuickSearch = debounce((event) => {
+    columnNameSearchQuery.value = "";
+    columnValueSearchQuery.value = "";
+    quickSearchQuery.value = event.target.value;
+    search();
+}, 300);
+
+const handleColumnSearch = debounce((event, columnName) => {
+    columnNameSearchQuery.value = columnName;
+    columnValueSearchQuery.value = "";
+    columnValueSearchQuery.value = event.target.value;
+    search();
+}, 300);
+
+onMounted(() => {
+    // Initial Modals
+    state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
+    state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
+    state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
+
+    // load input search input values on refresh
+    const columnSearchInput = route.query.search_col ?? "";
+    const columnSearchInputValue = route.query.search_col_val ?? "";
+
+    if (columnSearchInput !== "" || columnSearchInputValue !== "") {
+        loadInputSearchValues(columnSearchInput, columnSearchInputValue);
+    } else {
+        // Only load quick search input values on refresh
+        // when column search value is not present
+        quickSearchQuery.value = route.query.search ?? "";
+    }
+
+    listUsers();
+});
+
+function loadInputSearchValues(columnName, columnInputValue) {
+    switch (columnName) {
+        case "fname":
+            searchInputFirstname.value = columnInputValue;
+            break;
+        case "lname":
+            searchInputLastname.value = columnInputValue;
+            break;
+        case "email":
+            searchInputEmail.value = columnInputValue;
+            break;
+        case "date":
+            searchInputDate.value = columnInputValue;
+            break;
+        default:
+            break;
+    }
+}
 
 function search() {
     const sortby = route.query.sort ?? "";
@@ -49,67 +182,6 @@ function search() {
 
     getUsers(page, sortby, searchColumnName, searchColumnValue, searchValue);
 }
-
-const form = reactive({
-    firstname: "",
-    lastname: "",
-    email: "",
-});
-
-const editForm = reactive({
-    firstname: "",
-    lastname: "",
-    email: "",
-});
-
-const deleteForm = reactive({
-    id: "",
-});
-
-const state = reactive({
-    modal_new_user: null,
-    modal_edit_user: null,
-    modal_delete_user: null,
-});
-
-const formOnSubmit = async (event) => {
-    await storeUser({ ...form });
-    if (Object.values(storeUserErrors.value).length === 0) {
-        closeNewUserModal();
-        await getUsers();
-    }
-};
-
-const updateFormOnSubmit = async () => {
-    await updateUser({ ...editForm });
-    if (Object.values(updateErrors.value).length === 0) {
-        closeEditUserModal();
-        await getUsers();
-    }
-};
-
-const deleteFormOnSubmit = async () => {
-    await deleteUser({ ...deleteForm });
-    closeDeleteUserModal();
-    await getUsers();
-};
-
-onMounted(() => {
-    state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
-    state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
-    state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
-    quickSearchQuery.value = route.query.search ?? "";
-    columnNameSearchQuery.value = route.query.search_col ?? "";
-    columnValueSearchQuery.value = route.query.search_col_val ?? "";
-
-    getUsers(
-        route.query.page ?? 1,
-        route.query.sort ?? "",
-        route.query.search_col ?? "",
-        route.query.search_col_val ?? "",
-        route.query.search ?? "",
-    );
-});
 
 function openNewUserModal() {
     state.modal_new_user.show();
@@ -148,17 +220,6 @@ function closeDeleteUserModal() {
     state.modal_delete_user.hide();
 }
 
-const handleQuickSearch = debounce((event) => {
-    search();
-}, 300);
-
-const handleColumnSearch = debounce((event, columnName) => {
-    columnNameSearchQuery.value = columnName;
-    columnValueSearchQuery.value = "";
-    columnValueSearchQuery.value = event.target.value;
-    search();
-}, 300);
-
 function debounce(func, delay) {
     let timeoutId;
     return function (...args) {
@@ -169,7 +230,46 @@ function debounce(func, delay) {
     };
 }
 
-async function sortBy(sortby) {
+const quickSearchFocus = () => {
+    // When Quick Search Input is focused then Column Search Inputs should be empty
+
+    searchInputFirstname.value = "";
+    searchInputLastname.value = "";
+    searchInputEmail.value = "";
+    searchInputDate.value = "";
+};
+
+const searchColumnFocus = (columnName) => {
+    // When Column Seach Input is focused, Quick search should be empty
+    quickSearchQuery.value = "";
+
+    switch (columnName) {
+        case "fname":
+            searchInputLastname.value = "";
+            searchInputEmail.value = "";
+            searchInputDate.value = "";
+            break;
+        case "lname":
+            searchInputFirstname.value = "";
+            searchInputEmail.value = "";
+            searchInputDate.value = "";
+            break;
+        case "email":
+            searchInputFirstname.value = "";
+            searchInputLastname.value = "";
+            searchInputDate.value = "";
+            break;
+        case "date":
+            searchInputFirstname.value = "";
+            searchInputLastname.value = "";
+            searchInputEmail.value = "";
+            break;
+        default:
+            break;
+    }
+};
+
+const sortBy = async (sortby) => {
     const searchBy = route.query.search ?? "";
     const page = route.query.page ?? 1;
     const searchValue = quickSearchQuery.value;
@@ -193,13 +293,7 @@ async function sortBy(sortby) {
         searchColumnValue,
         searchValue,
     );
-
-    // router.push({
-    //     path: "/frontend",
-    //     query: { page: page, sort: sortby, search: searchBy },
-    // });
-    // await getUsers(page, sortby, searchBy);
-}
+};
 
 const paginate = async (page) => {
     const searchBy = route.query.search ?? "";
@@ -218,6 +312,7 @@ const paginate = async (page) => {
             search: searchValue,
         },
     });
+
     await getUsers(
         page,
         sortby,
@@ -226,6 +321,16 @@ const paginate = async (page) => {
         searchValue,
     );
 };
+
+const isActiveBtn = (name) => {
+    return route.query.sort === name;
+};
+
+const sortButtonClasses = computed(() => (isActive) => {
+    return {
+        "text-white bg-dark": isActive,
+    };
+});
 </script>
 <template>
     <div class="container">
@@ -245,16 +350,14 @@ const paginate = async (page) => {
                     @input="handleQuickSearch"
                     placeholder="Quick Search.."
                     v-model="quickSearchQuery"
+                    @focus="quickSearchFocus"
                     aria-label="Search"
                     aria-describedby="search-btn"
                 />
             </div>
         </div>
         <div style="margin: 10px 0"></div>
-        <div
-            id="tableExample"
-            data-list='{"valueNames":["name","email","age"],"page":5,"pagination":true}'
-        >
+        <div>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped fs--1 mb-0">
                     <thead class="bg-200 text-900">
@@ -271,6 +374,8 @@ const paginate = async (page) => {
                                                     'fname',
                                                 )
                                             "
+                                            v-model="searchInputFirstname"
+                                            @focus="searchColumnFocus('fname')"
                                             placeholder="Search.."
                                             aria-label="Search"
                                             aria-describedby="search-column-input"
@@ -285,6 +390,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'fname_asc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('fname_asc')
                                                         "
@@ -300,6 +412,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'fname_desc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('fname_desc')
                                                         "
@@ -325,6 +444,8 @@ const paginate = async (page) => {
                                                     'lname',
                                                 )
                                             "
+                                            v-model="searchInputLastname"
+                                            @focus="searchColumnFocus('lname')"
                                             placeholder="Search.."
                                             aria-label="Search"
                                             aria-describedby="search-column-input"
@@ -339,6 +460,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'lname_asc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('lname_asc')
                                                         "
@@ -354,6 +482,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'lname_desc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('lname_desc')
                                                         "
@@ -379,6 +514,8 @@ const paginate = async (page) => {
                                                     'email',
                                                 )
                                             "
+                                            v-model="searchInputEmail"
+                                            @focus="searchColumnFocus('email')"
                                             placeholder="Search.."
                                             aria-label="Search"
                                             aria-describedby="search-column-input"
@@ -393,6 +530,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'email_asc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('email_asc')
                                                         "
@@ -408,6 +552,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'email_desc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('email_desc')
                                                         "
@@ -433,6 +584,8 @@ const paginate = async (page) => {
                                                     'date',
                                                 )
                                             "
+                                            v-model="searchInputDate"
+                                            @focus="searchColumnFocus('date')"
                                             placeholder="Search.."
                                             aria-label="Search"
                                             aria-describedby="search-column-input"
@@ -447,6 +600,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'date_asc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('date_asc')
                                                         "
@@ -462,6 +622,13 @@ const paginate = async (page) => {
                                             <div class="col-3">
                                                 <span>
                                                     <button
+                                                        :class="
+                                                            sortButtonClasses(
+                                                                isActiveBtn(
+                                                                    'date_desc',
+                                                                ),
+                                                            )
+                                                        "
                                                         @click="
                                                             sortBy('date_desc')
                                                         "
@@ -504,12 +671,20 @@ const paginate = async (page) => {
                     </tbody>
                     <tbody class="list" v-else-if="isLoading">
                         <tr>
-                            <td colspan="5">Loading...</td>
+                            <td>Loading...</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                     <tbody class="list" v-else>
                         <tr>
-                            <td colspan="5">No results found!</td>
+                            <td>No results found!</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
