@@ -19,19 +19,35 @@ const {
     updateErrors,
 } = useUsers();
 
-const searchQuery = ref(null);
+const quickSearchQuery = ref("");
+const columnNameSearchQuery = ref("");
+const columnValueSearchQuery = ref("");
 
-const search = () => {
+function search() {
     const sortby = route.query.sort ?? "";
     const page = route.query.page ?? 1;
-    const searchValue = searchQuery.value;
-
+    const searchValue = quickSearchQuery.value;
+    const searchColumnName = columnNameSearchQuery.value;
+    const searchColumnValue = columnValueSearchQuery.value;
+    console.log({
+        page: page,
+        sort: sortby,
+        search_col: searchColumnName,
+        search_col_val: searchColumnValue,
+        search: searchValue,
+    });
     router.push({
         path: "/frontend",
-        query: { page: page, sort: sortby, search: searchValue },
+        query: {
+            page: page,
+            sort: sortby,
+            search_col: searchColumnName,
+            search_col_val: searchColumnValue,
+            search: searchValue,
+        },
     });
-    getUsers(page, sortby, searchValue);
-};
+    getUsers(page, sortby, searchColumnName, searchColumnValue, searchValue);
+}
 
 const form = reactive({
     firstname: "",
@@ -83,11 +99,15 @@ onMounted(() => {
     state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
     state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
     state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
-    searchQuery.value = route.query.search ?? "";
+    quickSearchQuery.value = route.query.search ?? "";
+    columnNameSearchQuery.value = route.query.search_col ?? "";
+    columnValueSearchQuery.value = route.query.search_col_val ?? "";
 
     getUsers(
         route.query.page ?? 1,
         route.query.sort ?? "",
+        route.query.search_col ?? "",
+        route.query.search_col_val ?? "",
         route.query.search ?? "",
     );
 });
@@ -129,7 +149,14 @@ function closeDeleteUserModal() {
     state.modal_delete_user.hide();
 }
 
-const handleInput = debounce((event) => {
+const handleQuickSearch = debounce((event) => {
+    search();
+}, 300);
+
+const handleColumnSearch = debounce((event, columnName) => {
+    columnNameSearchQuery.value = columnName;
+    columnValueSearchQuery.value = "";
+    columnValueSearchQuery.value = event.target.value;
     search();
 }, 300);
 
@@ -142,24 +169,61 @@ function debounce(func, delay) {
         }, delay);
     };
 }
+
 async function sortBy(sortby) {
     const searchBy = route.query.search ?? "";
     const page = route.query.page ?? 1;
+    const searchColumnName = columnNameSearchQuery.value;
+    const searchColumnValue = columnValueSearchQuery.value;
+
     router.push({
         path: "/frontend",
-        query: { page: page, sort: sortby, search: searchBy },
+        query: {
+            page: page,
+            sort: sortby,
+            search_col: searchColumnName,
+            search_col_val: searchColumnValue,
+            search: searchValue,
+        },
     });
-    await getUsers(page, sortby, searchBy);
+    await getUsers(
+        page,
+        sortby,
+        searchColumnName,
+        searchColumnValue,
+        searchValue,
+    );
+
+    // router.push({
+    //     path: "/frontend",
+    //     query: { page: page, sort: sortby, search: searchBy },
+    // });
+    // await getUsers(page, sortby, searchBy);
 }
 
 const paginate = async (page) => {
     const searchBy = route.query.search ?? "";
     const sortby = route.query.sort ?? "";
+    const searchColumnName = columnNameSearchQuery.value;
+    const searchColumnValue = columnValueSearchQuery.value;
+
     router.push({
         path: "/frontend",
-        query: { page: page, sort: sortby, search: searchBy },
+        query: {
+            page: page,
+            sort: sortby,
+            search_col: searchColumnName,
+            search_col_val: searchColumnValue,
+            search: searchValue,
+        },
     });
-    await getUsers(page, sortby, searchBy);
+    await getUsers(
+        page,
+        sortby,
+        searchColumnName,
+        searchColumnValue,
+        searchValue,
+    );
 };
 </script>
 <template>
@@ -177,9 +241,9 @@ const paginate = async (page) => {
                 <input
                     type="text"
                     class="form-control float-end"
-                    @input="handleInput"
+                    @input="handleQuickSearch"
                     placeholder="Quick Search.."
-                    v-model="searchQuery"
+                    v-model="quickSearchQuery"
                     aria-label="Search"
                     aria-describedby="search-btn"
                 />
@@ -195,6 +259,23 @@ const paginate = async (page) => {
                     <thead class="bg-200 text-900">
                         <tr>
                             <th class="sort" data-sort="name">
+                                <div class="row">
+                                    <div class="col">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            @input="
+                                                handleColumnSearch(
+                                                    $event,
+                                                    'fname',
+                                                )
+                                            "
+                                            placeholder="Search.."
+                                            aria-label="Search"
+                                            aria-describedby="search-column-input"
+                                        />
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col">First Name</div>
                                     <div class="col">
@@ -233,6 +314,23 @@ const paginate = async (page) => {
                             </th>
                             <th class="sort" data-sort="name">
                                 <div class="row">
+                                    <div class="col">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            @input="
+                                                handleColumnSearch(
+                                                    $event,
+                                                    'lname',
+                                                )
+                                            "
+                                            placeholder="Search.."
+                                            aria-label="Search"
+                                            aria-describedby="search-column-input"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col">Last Name</div>
                                     <div class="col">
                                         <div class="row">
@@ -270,6 +368,23 @@ const paginate = async (page) => {
                             </th>
                             <th class="sort desc" data-sort="email">
                                 <div class="row">
+                                    <div class="col">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            @input="
+                                                handleColumnSearch(
+                                                    $event,
+                                                    'email',
+                                                )
+                                            "
+                                            placeholder="Search.."
+                                            aria-label="Search"
+                                            aria-describedby="search-column-input"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="row">
                                     <div class="col">Email</div>
                                     <div class="col">
                                         <div class="row">
@@ -306,6 +421,23 @@ const paginate = async (page) => {
                                 </div>
                             </th>
                             <th class="">
+                                <div class="row">
+                                    <div class="col">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            @input="
+                                                handleColumnSearch(
+                                                    $event,
+                                                    'date',
+                                                )
+                                            "
+                                            placeholder="Search.."
+                                            aria-label="Search"
+                                            aria-describedby="search-column-input"
+                                        />
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col">Created Date</div>
                                     <div class="col">

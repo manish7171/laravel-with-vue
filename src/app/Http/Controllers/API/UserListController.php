@@ -12,25 +12,33 @@ use \Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 final class UserListController extends Controller
 {
+    const PER_PAGE = 5;
+
     public function __invoke(Request $request): AnonymousResourceCollection
     {
-        $page = $request->get('page') ?? 1;
-        $perPage = $request->get('perPage') ?? 5;
         $sort = $request->get('sort') ?? '';
 
-        $total = 0;
-        $offset = ($page - 1) * $perPage;
 
         $usersQuery = User::query();
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            if (!is_null($search) && $search !== "") {
-                $usersQuery->where(function ($query) use ($search) {
-                    $query->orWhere('first_name', 'like', '%' . $search . '%')
-                        ->orWhere('last_name', 'like', '%' . $search . '%')
-                        ->orWhere('user_email', 'like', '%' . $search . '%')
-                        ->orWhere('created_at', 'like', '%' . $search . '%');
-                });
+
+        // NOTE: column search takes precedence over quick search
+        //
+        if ($this->shouldSearchForColumn($request)) {
+            $searchColumn = $request->get('search_col');
+            $searchColumnValue = $request->get('search_col_val');
+            $columnName = $this->getColumnName($searchColumn);
+            $usersQuery->where($columnName, 'like', '%' . $searchColumnValue . '%');
+        } else {
+            if ($request->has('search')) {
+                $search = $request->get('search');
+                if (!is_null($search) && $search !== "") {
+                    $usersQuery->where(function ($query) use ($search) {
+                        $query->orWhere('first_name', 'like', '%' . $search . '%')
+                            ->orWhere('last_name', 'like', '%' . $search . '%')
+                            ->orWhere('user_email', 'like', '%' . $search . '%')
+                            ->orWhere('created_at', 'like', '%' . $search . '%');
+                    });
+                }
             }
         }
 
@@ -74,8 +82,39 @@ final class UserListController extends Controller
             }
         }
 
-        $page = (int)$request->get('page') ?? 1;
+        return UserResource::collection($usersQuery->select('id', 'first_name', 'last_name', 'user_email', 'created_at')->paginate(SELF::PER_PAGE));
+    }
 
-        return UserResource::collection($usersQuery->select('id', 'first_name', 'last_name', 'user_email', 'created_at')->paginate($perPage));
+    private function shouldSearchForColumn(Request $request): bool
+    {
+        if ($request->has('search_col') && $request->has('search_col_val')) {
+            $searchColumn = $request->get('search_col');
+            $searchColumnValue = $request->get('search_col_val');
+
+            if ((!is_null($searchColumn) && $searchColumn !== "") &&
+                (!is_null($searchColumnValue) && $searchColumnValue !== "")
+            ) {
+                if (in_array($searchColumn, ['fname', 'lname', 'email', 'date'])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function getColumnName(string $requestedColumnName): string
+    {
+        $columnMappings = [
+            'fname' => 'first_name',
+            'lname' => 'last_name',
+            'email' => 'user_email',
+            'date' => 'created_at'
+        ];
+
+        if (array_key_exists($requestedColumnName, $columnMappings)) {
+            return $columnMappings[$requestedColumnName];
+        }
+
+        throw new \Exception('Column name should have existed at this point');
     }
 }

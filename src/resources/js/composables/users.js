@@ -7,13 +7,23 @@ export default function useUsers() {
     const usersCount = ref(0);
     const updateErrors = ref({});
 
-    const getUsers = async (page = 1, sort = "", search = "") => {
+    const getUsers = async (
+        page = 1,
+        sort = "",
+        searchColumn = "",
+        searchColumnValue = "",
+        search = "",
+    ) => {
         axios
             .get(
                 "/api/users?page=" +
                     page +
                     "&sort=" +
                     sort +
+                    "&search_col=" +
+                    searchColumn +
+                    "&search_col_val=" +
+                    searchColumnValue +
                     "&search=" +
                     search,
             )
