@@ -4,7 +4,7 @@ import axios from "axios";
 export default function useUsers() {
     const users = ref({});
     const isLoading = ref(false);
-    const errors = ref({});
+    const storeUserErrors = ref({});
     const usersCount = ref(0);
     const updateErrors = ref({});
 
@@ -41,17 +41,12 @@ export default function useUsers() {
     };
 
     const storeUser = async (data) => {
-        axios
-            .post("/api/user/", data)
-            .then((response) => {
-                return response;
-            })
-            .catch((e) => {
-                if (e.response.status === 422) {
-                    errors.value = e.response.data.errors;
-                }
-                return e;
-            });
+        axios.post("/api/user/", data).catch((e) => {
+            //return e;
+            if (e.response.status === 422) {
+                storeUserErrors.value = e.response.data.errors;
+            }
+        });
     };
 
     const updateUser = async (data) => {
@@ -59,7 +54,6 @@ export default function useUsers() {
             if (e.response.status === 422) {
                 updateErrors.value = e.response.data.errors;
             }
-            return e;
         });
     };
     return {
@@ -68,7 +62,7 @@ export default function useUsers() {
         getUsers,
         usersCount,
         storeUser,
-        errors,
+        storeUserErrors,
         updateUser,
         updateErrors,
         deleteUser,

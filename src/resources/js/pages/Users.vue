@@ -13,11 +13,11 @@ const {
     isLoading,
     getUsers,
     usersCount,
-    deleteUser,
     storeUser,
-    errors,
+    storeUserErrors,
     updateUser,
     updateErrors,
+    deleteUser,
 } = useUsers();
 
 // for general quick search input
@@ -74,7 +74,7 @@ const state = reactive({
 
 const formOnSubmit = async (event) => {
     await storeUser({ ...form });
-    if (Object.values(errors.value).length === 0) {
+    if (Object.values(storeUserErrors.value).length === 0) {
         closeNewUserModal();
         await getUsers();
     }
@@ -90,10 +90,8 @@ const updateFormOnSubmit = async () => {
 
 const deleteFormOnSubmit = async () => {
     await deleteUser({ ...deleteForm });
-    if (Object.values(updateErrors.value).length === 0) {
-        closeDeleteUserModal();
-        await getUsers();
-    }
+    closeDeleteUserModal();
+    await getUsers();
 };
 
 onMounted(() => {
@@ -549,7 +547,11 @@ const paginate = async (page) => {
                             <input
                                 type="text"
                                 class="form-control"
-                                :class="[errors.firstname ? 'is-invalid' : '']"
+                                :class="[
+                                    storeUserErrors.firstname
+                                        ? 'is-invalid'
+                                        : '',
+                                ]"
                                 id="firstname"
                                 name="firstname"
                                 v-model="form.firstname"
@@ -557,10 +559,10 @@ const paginate = async (page) => {
                                 required
                             />
                             <div
-                                v-if="errors.firstname"
+                                v-if="storeUserErrors.firstname"
                                 class="invalid-feedback"
                             >
-                                {{ errors.firstname[0] }}
+                                {{ storeUserErrors.firstname[0] }}
                             </div>
 
                             <div id="desc-email" class="form-text d-none">
@@ -572,7 +574,11 @@ const paginate = async (page) => {
                             <input
                                 type="text"
                                 class="form-control"
-                                :class="[errors.lastname ? 'is-invalid' : '']"
+                                :class="[
+                                    storeUserErrors.lastname
+                                        ? 'is-invalid'
+                                        : '',
+                                ]"
                                 id="lastname"
                                 name="lastname"
                                 v-model="form.lastname"
@@ -580,10 +586,10 @@ const paginate = async (page) => {
                                 required
                             />
                             <div
-                                v-if="errors.lastname"
+                                v-if="storeUserErrors.lastname"
                                 class="invalid-feedback"
                             >
-                                {{ errors.lastname[0] }}
+                                {{ storeUserErrors.lastname[0] }}
                             </div>
                             <div id="desc-email" class="form-text d-none">
                                 Type your last name.
@@ -592,15 +598,20 @@ const paginate = async (page) => {
                             <input
                                 type="email"
                                 class="form-control"
-                                :class="[errors.email ? 'is-invalid' : '']"
+                                :class="[
+                                    storeUserErrors.email ? 'is-invalid' : '',
+                                ]"
                                 id="email"
                                 name="email"
                                 v-model="form.email"
                                 aria-describedby="desc-email"
                                 required
                             />
-                            <div v-if="errors.email" class="invalid-feedback">
-                                {{ errors.email[0] }}
+                            <div
+                                v-if="storeUserErrors.email"
+                                class="invalid-feedback"
+                            >
+                                {{ storeUserErrors.email[0] }}
                             </div>
                             <div id="desc-email" class="form-text d-none">
                                 Type your email address.
@@ -653,7 +664,9 @@ const paginate = async (page) => {
                             <input
                                 type="text"
                                 class="form-control"
-                                :class="[errors.firstname ? 'is-invalid' : '']"
+                                :class="[
+                                    updateErrors.firstname ? 'is-invalid' : '',
+                                ]"
                                 id="firstname"
                                 name="firstname"
                                 v-model="editForm.firstname"
