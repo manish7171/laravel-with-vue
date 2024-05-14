@@ -10,6 +10,7 @@ const route = useRoute();
 //import NewUser from "../components/modals/NewUser.vue";
 const {
     users,
+    isLoading,
     getUsers,
     usersCount,
     deleteUser,
@@ -19,8 +20,13 @@ const {
     updateErrors,
 } = useUsers();
 
+// for general quick search input
 const quickSearchQuery = ref("");
+
+//column name we are searching for
 const columnNameSearchQuery = ref("");
+
+//value for column name for eg. first_name = test
 const columnValueSearchQuery = ref("");
 
 function search() {
@@ -29,13 +35,7 @@ function search() {
     const searchValue = quickSearchQuery.value;
     const searchColumnName = columnNameSearchQuery.value;
     const searchColumnValue = columnValueSearchQuery.value;
-    console.log({
-        page: page,
-        sort: sortby,
-        search_col: searchColumnName,
-        search_col_val: searchColumnValue,
-        search: searchValue,
-    });
+
     router.push({
         path: "/frontend",
         query: {
@@ -46,6 +46,7 @@ function search() {
             search: searchValue,
         },
     });
+
     getUsers(page, sortby, searchColumnName, searchColumnValue, searchValue);
 }
 
@@ -477,7 +478,7 @@ const paginate = async (page) => {
                             <th class=""></th>
                         </tr>
                     </thead>
-                    <tbody class="list" v-if="usersCount > 0">
+                    <tbody class="list" v-if="usersCount > 0 && !isLoading">
                         <tr v-for="user in users.data">
                             <td class="name">{{ user.firstName }}</td>
                             <td class="name">{{ user.lastName }}</td>
@@ -499,6 +500,11 @@ const paginate = async (page) => {
                                     </button>
                                 </div>
                             </td>
+                        </tr>
+                    </tbody>
+                    <tbody class="list" v-else-if="isLoading">
+                        <tr>
+                            <td colspan="5">Loading...</td>
                         </tr>
                     </tbody>
                     <tbody class="list" v-else>

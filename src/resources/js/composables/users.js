@@ -3,6 +3,7 @@ import axios from "axios";
 
 export default function useUsers() {
     const users = ref({});
+    const isLoading = ref(false);
     const errors = ref({});
     const usersCount = ref(0);
     const updateErrors = ref({});
@@ -14,6 +15,7 @@ export default function useUsers() {
         searchColumnValue = "",
         search = "",
     ) => {
+        isLoading.value = true;
         axios
             .get(
                 "/api/users?page=" +
@@ -30,6 +32,7 @@ export default function useUsers() {
             .then((response) => {
                 usersCount.value = response.data.meta.total;
                 users.value = response.data;
+                isLoading.value = false;
             });
     };
 
@@ -61,6 +64,7 @@ export default function useUsers() {
     };
     return {
         users,
+        isLoading,
         getUsers,
         usersCount,
         storeUser,
