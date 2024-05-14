@@ -172,6 +172,7 @@ function debounce(func, delay) {
 async function sortBy(sortby) {
     const searchBy = route.query.search ?? "";
     const page = route.query.page ?? 1;
+    const searchValue = quickSearchQuery.value;
     const searchColumnName = columnNameSearchQuery.value;
     const searchColumnValue = columnValueSearchQuery.value;
 
@@ -203,6 +204,7 @@ async function sortBy(sortby) {
 const paginate = async (page) => {
     const searchBy = route.query.search ?? "";
     const sortby = route.query.sort ?? "";
+    const searchValue = quickSearchQuery.value;
     const searchColumnName = columnNameSearchQuery.value;
     const searchColumnValue = columnValueSearchQuery.value;
 
