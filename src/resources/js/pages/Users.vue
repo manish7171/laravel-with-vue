@@ -307,14 +307,13 @@ const isActiveBtn = (name) => {
 
 const sortButtonClasses = computed(() => (isActive) => {
     return {
-        "text-white bg-dark": isActive,
+        active: isActive,
     };
 });
 </script>
 <template>
     <div class="container">
         <h1>User Listing</h1>
-        <!--<TestModal id="exampleModal" @list-users="listUsers"></TestModal>-->
         <!-- Modal -->
 
         <div class="d-flex justify-content-between">
@@ -341,12 +340,13 @@ const sortButtonClasses = computed(() => (isActive) => {
             </div>
         </div>
         <div style="margin: 10px 0"></div>
+
         <div>
             <div class="table-responsive">
                 <table class="table table-bordered table-striped fs--1 mb-0">
                     <thead class="bg-200 text-900">
                         <tr>
-                            <th class="sort" data-sort="name">
+                            <th>
                                 <div class="row">
                                     <div class="col">
                                         <input
@@ -367,58 +367,74 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col align-self-center">
-                                        First Name
-                                    </div>
-                                    <div class="col">
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'fname_asc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('fname_asc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8250;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                    <div
+                                        class="d-flex gap-2 mt-3 mb-3 justify-content-between"
+                                    >
+                                        <div class="align-self-center">
+                                            First Name
                                         </div>
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'fname_desc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('fname_desc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8249;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                        <div class="btn-group">
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'fname_asc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('fname_asc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-down"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'fname_desc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('fname_desc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-up"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </th>
-                            <th class="sort" data-sort="name">
+                            <th>
                                 <div class="row">
                                     <div class="col">
                                         <input
@@ -439,53 +455,69 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col align-self-center">
-                                        Last Name
-                                    </div>
-                                    <div class="col">
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'lname_asc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('lname_asc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8250;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                    <div
+                                        class="d-flex gap-2 mt-3 mb-3 justify-content-between"
+                                    >
+                                        <div class="align-self-center">
+                                            Last Name
                                         </div>
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'lname_desc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('lname_desc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8249;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                        <div class="btn-group">
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'lname_asc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('lname_asc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-down"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'lname_desc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('lname_desc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-up"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -511,53 +543,69 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col align-self-center">
-                                        Email
-                                    </div>
-                                    <div class="col">
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'email_asc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('email_asc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8250;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                    <div
+                                        class="d-flex gap-2 mt-3 mb-3 justify-content-between"
+                                    >
+                                        <div class="align-self-center">
+                                            Email
                                         </div>
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'email_desc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('email_desc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8249;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                        <div class="btn-group">
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'email_asc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('email_asc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-down"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'email_desc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('email_desc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-up"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -583,53 +631,67 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col align-self-center">
-                                        Created Date
-                                    </div>
-                                    <div class="col">
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'date_asc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('date_asc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8250;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                    <div
+                                        class="d-flex gap-2 mt-3 mb-3 justify-content-between"
+                                    >
+                                        <div class="align-self-center">
+                                            Date
                                         </div>
-                                        <div class="row">
-                                            <div class="col-9"></div>
-                                            <div class="col-3">
-                                                <span>
-                                                    <button
-                                                        :class="
-                                                            sortButtonClasses(
-                                                                isActiveBtn(
-                                                                    'date_desc',
-                                                                ),
-                                                            )
-                                                        "
-                                                        @click="
-                                                            sortBy('date_desc')
-                                                        "
-                                                        style="rotate: 90deg"
-                                                    >
-                                                        &#8249;
-                                                    </button>
-                                                </span>
-                                            </div>
+                                        <div class="btn-group">
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn('date_asc'),
+                                                    )
+                                                "
+                                                @click="sortBy('date_asc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-down"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 2.5a.5.5 0 0 0-1 0v8.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L3.5 11.293zm3.5 1a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-secondary"
+                                                :class="
+                                                    sortButtonClasses(
+                                                        isActiveBtn(
+                                                            'date_desc',
+                                                        ),
+                                                    )
+                                                "
+                                                @click="sortBy('date_desc')"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="16"
+                                                    height="16"
+                                                    fill="currentColor"
+                                                    class="bi bi-sort-up"
+                                                    viewBox="0 0 16 16"
+                                                >
+                                                    <path
+                                                        d="M3.5 12.5a.5.5 0 0 1-1 0V3.707L1.354 4.854a.5.5 0 1 1-.708-.708l2-1.999.007-.007a.5.5 0 0 1 .7.006l2 2a.5.5 0 1 1-.707.708L3.5 3.707zm3.5-9a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5M7.5 6a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1z"
+                                                    ></path>
+                                                </svg>
+                                                <span class="visually-hidden"
+                                                    >Button</span
+                                                >
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -637,7 +699,7 @@ const sortButtonClasses = computed(() => (isActive) => {
                             <th class=""></th>
                         </tr>
                     </thead>
-                    <tbody class="list" v-if="usersCount > 0 && !isLoading">
+                    <tbody class="" v-if="usersCount > 0 && !isLoading">
                         <tr v-for="user in users.data">
                             <td class="name">{{ user.firstName }}</td>
                             <td class="name">{{ user.lastName }}</td>
