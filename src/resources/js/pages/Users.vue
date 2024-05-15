@@ -6,6 +6,7 @@ import { useRoute } from "vue-router";
 import { Bootstrap5Pagination } from "laravel-vue-pagination";
 import axios from "axios";
 import CreateNewUserModal from "../components/modals/NewUser.vue";
+import EditUserModal from "../components/modals/EditUser.vue";
 
 const route = useRoute();
 const { users, isLoading, getUsers, usersCount } = useUsers();
@@ -13,7 +14,7 @@ const { users, isLoading, getUsers, usersCount } = useUsers();
 //const testStoreErrors = ref({});
 //const storeUserErrors = ref({});
 
-const updateErrors = ref({});
+//const updateErrors = ref({});
 
 // for general quick search input
 const quickSearchQuery = ref("");
@@ -30,12 +31,12 @@ const searchInputLastname = ref("");
 const searchInputEmail = ref("");
 const searchInputDate = ref("");
 
-const editForm = reactive({
-    id: "",
-    firstname: "",
-    lastname: "",
-    email: "",
-});
+//const editForm = reactive({
+//    id: "",
+//    firstname: "",
+//    lastname: "",
+//    email: "",
+//});
 
 const deleteForm = reactive({
     id: "",
@@ -65,20 +66,20 @@ const listUsers = async () => {
     );
 };
 
-const updateFormOnSubmit = async (event) => {
-    const data = { ...editForm };
-    axios
-        .put("/api/user/" + data.id, data)
-        .then((response) => {
-            listUsers();
-            closeEditUserModal();
-        })
-        .catch((e) => {
-            if (e.response.status === 422) {
-                updateErrors.value = e.response.data.errors;
-            }
-        });
-};
+//const updateFormOnSubmit = async (event) => {
+//    const data = { ...editForm };
+//    axios
+//        .put("/api/user/" + data.id, data)
+//        .then((response) => {
+//            listUsers();
+//            closeEditUserModal();
+//        })
+//        .catch((e) => {
+//            if (e.response.status === 422) {
+//                updateErrors.value = e.response.data.errors;
+//            }
+//        });
+//};
 
 const deleteFormOnSubmit = async () => {
     const data = { ...deleteForm };
@@ -170,13 +171,15 @@ function filterUsersById(id) {
     return users.value.data.filter((item) => item.id === id);
 }
 
+const userModalData = ref({ id: "", firstname: "", lastname: "", email: "" });
+
 function openEditUserModal(id) {
     const editUser = filterUsersById(id);
-
-    editForm.firstname = editUser[0].firstName;
-    editForm.lastname = editUser[0].lastName;
-    editForm.email = editUser[0].email;
-    editForm.id = editUser[0].id;
+    console.log(editUser[0].firstName);
+    userModalData.value.firstname = editUser[0].firstName;
+    userModalData.value.lastname = editUser[0].lastName;
+    userModalData.value.email = editUser[0].email;
+    userModalData.value.id = editUser[0].id;
 
     state.modal_edit_user.show();
 }
@@ -320,7 +323,6 @@ const sortButtonClasses = computed(() => (isActive) => {
             id="createNewUserModal"
             @list-users="listUsers"
         ></CreateNewUserModal>
-        >
         <!-- Button trigger modal -->
         <button
             type="button"
@@ -334,13 +336,13 @@ const sortButtonClasses = computed(() => (isActive) => {
         <!-- Modal -->
 
         <div class="d-flex justify-content-between">
-            <button
+            <!-- <button
                 type="button"
                 class="btn btn-primary"
                 @click="openNewUserModal"
             >
                 Create New User
-            </button>
+            </button> -->
             <div>
                 <input
                     type="text"
@@ -704,129 +706,11 @@ const sortButtonClasses = computed(() => (isActive) => {
 
     <!-- Edit User Modal-->
 
-    <div
-        class="modal fade"
+    <EditUserModal
         id="modal_edit_user"
-        tabindex="-1"
-        aria-labelledby="modal_edit_user"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit User</h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <form @submit.prevent="updateFormOnSubmit">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="firstname" class="form-label"
-                                >First Name</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.firstname ? 'is-invalid' : '',
-                                ]"
-                                id="firstname"
-                                name="firstname"
-                                v-model="editForm.firstname"
-                                aria-describedby="desc-firstname"
-                                required
-                            />
-                            <div
-                                v-if="updateErrors.firstname"
-                                class="invalid-feedback"
-                            >
-                                {{ updateErrors.firstname[0] }}
-                            </div>
-
-                            <div id="desc-email" class="form-text d-none">
-                                Edit your first name.
-                            </div>
-                            <label for="lastname" class="form-label"
-                                >Last Name</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.lastname ? 'is-invalid' : '',
-                                ]"
-                                id="lastname"
-                                name="lastname"
-                                v-model="editForm.lastname"
-                                aria-describedby="desc-lastname"
-                                required
-                            />
-                            <div
-                                v-if="updateErrors.lastname"
-                                class="invalid-feedback"
-                            >
-                                {{ updateErrors.lastname[0] }}
-                            </div>
-                            <div id="desc-email" class="form-text d-none">
-                                Edit your last name.
-                            </div>
-                            <label for="email" class="form-label">Email</label>
-                            <input
-                                type="email"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.email ? 'is-invalid' : '',
-                                ]"
-                                id="email"
-                                name="email"
-                                v-model="editForm.email"
-                                aria-describedby="desc-email"
-                                required
-                            />
-                            <div
-                                v-if="updateErrors.email"
-                                class="invalid-feedback"
-                            >
-                                {{ updateErrors.email[0] }}
-                            </div>
-                            <div id="desc-email" class="form-text d-none">
-                                Edit your email address.
-                            </div>
-                            <input
-                                type="hidden"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.email ? 'is-invalid' : '',
-                                ]"
-                                id="id"
-                                name="id"
-                                v-model="editForm.id"
-                                aria-describedby="desc-email"
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                        >
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Update
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
+        :user="userModalData"
+        @list-users="listUsers"
+    ></EditUserModal>
     <!-- Delete Modal-->
     <div
         class="modal fade"
