@@ -1,15 +1,49 @@
 <script setup>
-import { onMounted } from "vue";
+import { ref, reactive, onMounted } from "vue";
+import axios from "axios";
 
-const props = defineProps({
-    id: String,
-    submit_form: Function,
+const props = defineProps({});
+const emit = defineEmits(["list-users"]);
+
+const form = reactive({
+    firstname: "",
+    lastname: "",
+    email: "",
+});
+const state = reactive({
+    modal_new_user: null,
+});
+
+const storeUserErrors = ref({});
+
+function formOnSubmit() {
+    axios
+        .post("/api/user/", { ...form })
+        .then((response) => {
+            closeNewUserModal();
+            emit("list-users");
+        })
+        .catch((e) => {
+            if (e.response.status === 422) {
+                storeUserErrors.value = e.response.data.errors;
+            }
+        });
+}
+
+function closeNewUserModal() {
+    state.modal_new_user.hide();
+}
+
+onMounted(() => {
+    // Initial Modals
+    state.modal_new_user = new bootstrap.Modal("#createNewUserModal", {});
 });
 </script>
+
 <template>
     <div
-        :id="props.id"
         class="modal fade"
+        id="createNewUserModal"
         tabindex="-1"
         aria-labelledby="modal_new_user"
         aria-hidden="true"
@@ -25,7 +59,7 @@ const props = defineProps({
                         aria-label="Close"
                     ></button>
                 </div>
-                <form @submit.prevent="props.submit_form">
+                <form @submit.prevent="formOnSubmit">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="firstname" class="form-label"
@@ -34,7 +68,11 @@ const props = defineProps({
                             <input
                                 type="text"
                                 class="form-control"
-                                :class="[errors.firstname ? 'is-invalid' : '']"
+                                :class="[
+                                    storeUserErrors.firstname
+                                        ? 'is-invalid'
+                                        : '',
+                                ]"
                                 id="firstname"
                                 name="firstname"
                                 v-model="form.firstname"
@@ -42,10 +80,10 @@ const props = defineProps({
                                 required
                             />
                             <div
-                                v-if="errors.firstname"
+                                v-if="storeUserErrors.firstname"
                                 class="invalid-feedback"
                             >
-                                {{ errors.firstname[0] }}
+                                {{ storeUserErrors.firstname[0] }}
                             </div>
 
                             <div id="desc-email" class="form-text d-none">
@@ -57,7 +95,11 @@ const props = defineProps({
                             <input
                                 type="text"
                                 class="form-control"
-                                :class="[errors.lastname ? 'is-invalid' : '']"
+                                :class="[
+                                    storeUserErrors.lastname
+                                        ? 'is-invalid'
+                                        : '',
+                                ]"
                                 id="lastname"
                                 name="lastname"
                                 v-model="form.lastname"
@@ -65,10 +107,10 @@ const props = defineProps({
                                 required
                             />
                             <div
-                                v-if="errors.lastname"
+                                v-if="storeUserErrors.lastname"
                                 class="invalid-feedback"
                             >
-                                {{ errors.lastname[0] }}
+                                {{ storeUserErrors.lastname[0] }}
                             </div>
                             <div id="desc-email" class="form-text d-none">
                                 Type your last name.
@@ -77,15 +119,20 @@ const props = defineProps({
                             <input
                                 type="email"
                                 class="form-control"
-                                :class="[errors.email ? 'is-invalid' : '']"
+                                :class="[
+                                    storeUserErrors.email ? 'is-invalid' : '',
+                                ]"
                                 id="email"
                                 name="email"
                                 v-model="form.email"
                                 aria-describedby="desc-email"
                                 required
                             />
-                            <div v-if="errors.email" class="invalid-feedback">
-                                {{ errors.email[0] }}
+                            <div
+                                v-if="storeUserErrors.email"
+                                class="invalid-feedback"
+                            >
+                                {{ storeUserErrors.email[0] }}
                             </div>
                             <div id="desc-email" class="form-text d-none">
                                 Type your email address.

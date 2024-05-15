@@ -8,8 +8,8 @@ mkdir -p ~/upfront
 cd ~/upfront
 
 # Git clone repository in the "upfront" folder
-echo ">>> git clone into upfront directory... "
-git clone https://github.com/manish7171/laravel-with-vue.git .
+#echo ">>> git clone into upfront directory... "
+#git clone https://github.com/manish7171/laravel-with-vue.git .
 
 # Build containers
 echo ">>> building and running docker containers... "

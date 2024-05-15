@@ -5,14 +5,13 @@ import router from "../router";
 import { useRoute } from "vue-router";
 import { Bootstrap5Pagination } from "laravel-vue-pagination";
 import axios from "axios";
-// ...
+import CreateNewUserModal from "../components/modals/NewUser.vue";
 
 const route = useRoute();
-//import NewUser from "../components/modals/NewUser.vue";
 const { users, isLoading, getUsers, usersCount } = useUsers();
 
 //const testStoreErrors = ref({});
-const storeUserErrors = ref({});
+//const storeUserErrors = ref({});
 
 const updateErrors = ref({});
 
@@ -30,12 +29,6 @@ const searchInputFirstname = ref("");
 const searchInputLastname = ref("");
 const searchInputEmail = ref("");
 const searchInputDate = ref("");
-
-const form = reactive({
-    firstname: "",
-    lastname: "",
-    email: "",
-});
 
 const editForm = reactive({
     id: "",
@@ -70,20 +63,6 @@ const listUsers = async () => {
         searchColumnValue,
         searchValue,
     );
-};
-
-const formOnSubmit = async (event) => {
-    axios
-        .post("/api/user/", { ...form })
-        .then((response) => {
-            listUsers();
-            closeNewUserModal();
-        })
-        .catch((e) => {
-            if (e.response.status === 422) {
-                storeUserErrors.value = e.response.data.errors;
-            }
-        });
 };
 
 const updateFormOnSubmit = async (event) => {
@@ -124,7 +103,7 @@ const handleColumnSearch = debounce((event, columnName) => {
 
 onMounted(() => {
     // Initial Modals
-    state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
+    // state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
     state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
     state.modal_delete_user = new bootstrap.Modal("#modal_delete_user", {});
 
@@ -335,6 +314,25 @@ const sortButtonClasses = computed(() => (isActive) => {
 <template>
     <div class="container">
         <h1>User Listing</h1>
+
+        <!-- CREATE NEW USER MODAL TEMPLATE -->
+        <CreateNewUserModal
+            id="createNewUserModal"
+            @list-users="listUsers"
+        ></CreateNewUserModal>
+        >
+        <!-- Button trigger modal -->
+        <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#createNewUserModal"
+        >
+            New User
+        </button>
+
+        <!-- Modal -->
+
         <div class="d-flex justify-content-between">
             <button
                 type="button"
@@ -383,7 +381,9 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col">First Name</div>
+                                    <div class="col align-self-center">
+                                        First Name
+                                    </div>
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-9"></div>
@@ -453,7 +453,9 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col">Last Name</div>
+                                    <div class="col align-self-center">
+                                        Last Name
+                                    </div>
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-9"></div>
@@ -523,7 +525,9 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col">Email</div>
+                                    <div class="col align-self-center">
+                                        Email
+                                    </div>
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-9"></div>
@@ -593,7 +597,9 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col">Created Date</div>
+                                    <div class="col align-self-center">
+                                        Created Date
+                                    </div>
                                     <div class="col">
                                         <div class="row">
                                             <div class="col-9"></div>
@@ -693,122 +699,6 @@ const sortButtonClasses = computed(() => (isActive) => {
                 :data="users"
                 @pagination-change-page="paginate"
             />
-        </div>
-    </div>
-
-    <!-- New User Modal-->
-    <div
-        class="modal fade"
-        id="modal_new_user"
-        tabindex="-1"
-        aria-labelledby="modal_new_user"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New User</h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <form @submit.prevent="formOnSubmit">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="firstname" class="form-label"
-                                >First Name</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="[
-                                    storeUserErrors.firstname
-                                        ? 'is-invalid'
-                                        : '',
-                                ]"
-                                id="firstname"
-                                name="firstname"
-                                v-model="form.firstname"
-                                aria-describedby="desc-firstname"
-                                required
-                            />
-                            <div
-                                v-if="storeUserErrors.firstname"
-                                class="invalid-feedback"
-                            >
-                                {{ storeUserErrors.firstname[0] }}
-                            </div>
-
-                            <div id="desc-email" class="form-text d-none">
-                                Type your first name.
-                            </div>
-                            <label for="lastname" class="form-label"
-                                >Last Name</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="[
-                                    storeUserErrors.lastname
-                                        ? 'is-invalid'
-                                        : '',
-                                ]"
-                                id="lastname"
-                                name="lastname"
-                                v-model="form.lastname"
-                                aria-describedby="desc-lastname"
-                                required
-                            />
-                            <div
-                                v-if="storeUserErrors.lastname"
-                                class="invalid-feedback"
-                            >
-                                {{ storeUserErrors.lastname[0] }}
-                            </div>
-                            <div id="desc-email" class="form-text d-none">
-                                Type your last name.
-                            </div>
-                            <label for="email" class="form-label">Email</label>
-                            <input
-                                type="email"
-                                class="form-control"
-                                :class="[
-                                    storeUserErrors.email ? 'is-invalid' : '',
-                                ]"
-                                id="email"
-                                name="email"
-                                v-model="form.email"
-                                aria-describedby="desc-email"
-                                required
-                            />
-                            <div
-                                v-if="storeUserErrors.email"
-                                class="invalid-feedback"
-                            >
-                                {{ storeUserErrors.email[0] }}
-                            </div>
-                            <div id="desc-email" class="form-text d-none">
-                                Type your email address.
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                        >
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Create
-                        </button>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 

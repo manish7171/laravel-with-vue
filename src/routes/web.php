@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    dd('asdf');
+    return redirect('/frontend');
 });
 
 Route::get('/frontend/{vue_capture?}', function () {
