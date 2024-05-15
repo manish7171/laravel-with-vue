@@ -14,10 +14,13 @@ git clone https://github.com/manish7171/laravel-with-vue.git .
 # Build containers
 echo ">>> building and running docker containers... "
 cd ~/upfront/docker
-docker compose up build --build-arg USER=www-data --build-arg USER_ID=1000 --build-arg GROUP_ID=1000
+echo ">> check current directory"
+pwd
+docker compose build --build-arg USER=www-data --build-arg GROUP=www-data --build-arg USER_ID=1000 --build-arg GROUP_ID=1000
 docker compose up -d
 cd ~/upfront
-
+pwd
+echo ">> check current directory"
 # create a datbase
 # Define variables
 echo ">>> Creating Database... "
@@ -38,6 +41,12 @@ echo ">>> Database '$DB_NAME' created successfully..."
 
 # Copy contents of .env.example to .env file
 cp ~/upfront/src/.env.example ~/upfront/src/.env
+
+# Reset permissions to 644 for files and 755 for folders
+cd ~/upfront/src
+
+#sudo find . -type f -exec chmod 664 {} \;
+#sudo find . -type d -exec chmod 775 {} \;
 
 APP_CONTAINER_NAME="app_jobleads"
 # composer install
@@ -60,6 +69,10 @@ docker exec -i $APP_CONTAINER_NAME php artisan migrate
 echo ">>> Seeding User table... "
 docker exec -i $APP_CONTAINER_NAME php artisan db:seed
 
+#make storage and bootstrap/cache folder writable
+echo ">>> Please give permission to write in storage and bootstrap/cache folder"
+sudo chmod -R o+w ~/upfront/src/storage ~/upfront/src/bootstrap/cache
+echo " !!! Project installation finished !!!"
 echo ">>> Open http://localhost:8000/frontend for viewing project"
 echo ">>> Open http://localhost:8888 for viewing database"
 echo ">>> Open http://localhost:8888/api/users for viewing user list api"
