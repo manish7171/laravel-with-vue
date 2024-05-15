@@ -26,8 +26,8 @@ RUN pecl install xdebug \
 
 COPY ./xdebug.ini "${PHP_INI_DIR}/conf.d"
 
-RUN groupadd --force -g $GROUP_ID $USER
-RUN useradd -ms /bin/bash --no-user-group -g $GROUP_ID -u 1337 $USER
-RUN usermod -u $USER_ID $USER
+#RUN groupadd --force -g $GROUP_ID $USER
+#RUN useradd -ms /bin/bash --no-user-group -g $GROUP_ID -u 1337 $USER
+#RUN usermod -u $USER_ID $USER
 
 WORKDIR /var/www
