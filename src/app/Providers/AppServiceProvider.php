@@ -2,12 +2,17 @@
 
 namespace App\Providers;
 
+use App\Http\Services\SearchQueryHandlerInterface;
+use App\Http\Services\UserSearchQueryHandler;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    public $bindings = [
+        SearchQueryHandlerInterface::class => UserSearchQueryHandler::class,
+    ];
     /**
      * Register any application services.
      */
