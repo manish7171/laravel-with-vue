@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\CustomThrottleMiddleware;
+use App\Http\Middleware\SecureHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,7 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->append(SecureHeaders::class);
+        $middleware->alias([
+            'throttle' => CustomThrottleMiddleware::class
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
