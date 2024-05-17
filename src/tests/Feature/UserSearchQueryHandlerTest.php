@@ -45,7 +45,7 @@ class UserSearchQueryHandlerTest extends TestCase
         $this->handler = new UserSearchQueryHandler(new User());
     }
 
-    public function testBuildQueryShouldReturnInstanceOfBuilderClass()
+    public function testSearchQueryHandlerShouldReturnArray()
     {
         // Mocking the request
         $request = Request::create('/', 'GET', [
@@ -54,14 +54,14 @@ class UserSearchQueryHandlerTest extends TestCase
             'sort' => 'fname_asc'
         ]);
 
-        $builder = $this->handler->buildQuery($request);
+        $builder = $this->handler->handle($request);
 
-        $this->assertInstanceOf(Builder::class, $builder);
+        $this->assertIsArray($builder);
         // Add assertions for the expected query clauses based on the provided request parameters
     }
 
 
-    public function testBuildSearchQueryRequest()
+    public function testSearchQueryHandlerRequest()
     {
         // Mocking request object
         $request = Request::create('/', 'GET', [
@@ -69,10 +69,8 @@ class UserSearchQueryHandlerTest extends TestCase
             'search_col_val' => 'manish'
         ]);
 
-        $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
-
-        $this->assertCount(1, $builder->get()->toArray());
+        $builder = $this->handler->handle($request);
+        $this->assertCount(1, $builder['data']->toArray()['data']);
     }
 
     public function testShouldReturnEmptyArray(): void
@@ -83,9 +81,9 @@ class UserSearchQueryHandlerTest extends TestCase
         ]);
 
         $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
+        $builder = $this->handler->handle($request, $usersQuery);
 
-        $this->assertCount(0, $builder->get()->toArray());
+        $this->assertCount(0, $builder['data']->toArray()['data']);
     }
 
     public function testShouldSortDesc(): void
@@ -95,9 +93,9 @@ class UserSearchQueryHandlerTest extends TestCase
         ]);
 
         $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
-        $result = $builder->get()->toArray();
-        $this->assertSame('manish', $result[0]['first_name']);
+        $builder = $this->handler->handle($request, $usersQuery);
+
+        $this->assertSame('manish', $builder['data']->toArray()['data'][0]['first_name']);
     }
 
     public function testShouldSortAsc(): void
@@ -107,9 +105,8 @@ class UserSearchQueryHandlerTest extends TestCase
         ]);
 
         $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
-        $result = $builder->get()->toArray();
-        $this->assertSame('Alex', $result[0]['first_name']);
+        $builder = $this->handler->handle($request, $usersQuery);
+        $this->assertSame('Alex', $builder['data']->toArray()['data'][0]['first_name']);
     }
 
     public function testShouldQuickSearch(): void
@@ -119,9 +116,9 @@ class UserSearchQueryHandlerTest extends TestCase
         ]);
 
         $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
-        $result = $builder->get()->toArray();
-        $this->assertSame('manish', $result[0]['first_name']);
+        $builder = $this->handler->handle($request, $usersQuery);
+
+        $this->assertSame('manish', $builder['data']->toArray()['data'][0]['first_name']);
     }
 
     public function testShouldSearchByColumn(): void
@@ -132,9 +129,9 @@ class UserSearchQueryHandlerTest extends TestCase
         ]);
 
         $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
-        $result = $builder->get()->toArray();
-        $this->assertSame('Alex', $result[0]['first_name']);
+        $builder = $this->handler->handle($request, $usersQuery);
+
+        $this->assertSame('Alex', $builder['data']->toArray()['data'][0]['first_name']);
     }
 
     public function testShouldSortByColumnFirstIfQuickSearchIsPresent(): void
@@ -146,8 +143,8 @@ class UserSearchQueryHandlerTest extends TestCase
         ]);
 
         $usersQuery = User::query();
-        $builder = $this->handler->buildQuery($request, $usersQuery);
-        $result = $builder->get()->toArray();
-        $this->assertSame('Alex', $result[0]['first_name']);
+        $builder = $this->handler->handle($request, $usersQuery);
+
+        $this->assertSame('Alex', $builder['data']->toArray()['data'][0]['first_name']);
     }
 }

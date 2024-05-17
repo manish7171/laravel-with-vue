@@ -6,89 +6,81 @@ namespace App\Http\Services;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use App\Http\Services\SearchQueryHandlerInterface;
 
 final class UserSearchQueryHandler implements SearchQueryHandlerInterface
 {
+    const PER_PAGE = 10;
+
     public function __construct(private User $user)
     {
     }
 
-    public function buildQuery(Request $request): Builder
+    public function handle(Request $request): array
     {
         $usersQuery = $this->user->query();
-
         // column search takes precedence over quick search
-        $usersQuery = $this->buildSearchQueryRequest($request, $usersQuery);
 
-        return $this->buildSortQueryRequest($request, $usersQuery);
-    }
-
-    /**
-     * If search_col and search request parameter are available,
-     * search_col would take precedence
-     */
-    private function buildSearchQueryRequest(Request $request, Builder $usersQuery): Builder
-    {
         if ($this->shouldSearchForColumn($request)) {
             $searchColumn = $request->get('search_col');
             $searchColumnValue = $request->get('search_col_val');
             $columnName = $this->getColumnName($searchColumn);
-            $usersQuery->where($columnName, 'like', '%' . $searchColumnValue . '%');
-            return $usersQuery;
-        }
-
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            if (!is_null($search) && $search !== "") {
-                $usersQuery->where(function ($query) use ($search) {
-                    $query->orWhere('first_name', 'like', '%' . $search . '%')
-                        ->orWhere('last_name', 'like', '%' . $search . '%')
-                        ->orWhere('user_email', 'like', '%' . $search . '%')
-                        ->orWhere('created_at', 'like', '%' . $search . '%');
-                });
-            }
-        }
-        return $usersQuery;
-    }
-
-    private function buildSortQueryRequest(Request $request, Builder $usersQuery): Builder
-    {
-        if ($request->has('sort')) {
-            $sort = $request->get('sort');
-            if (!is_null($sort) && $sort !== "") {
-                switch ($sort) {
-                    case 'fname_desc':
-                        $usersQuery->orderBy('first_name', 'desc');
-                        break;
-                    case 'fname_asc':
-                        $usersQuery->orderBy('first_name', 'asc');
-                        break;
-                    case 'lname_desc':
-                        $usersQuery->orderBy('last_name', 'desc');
-                        break;
-                    case 'lname_asc':
-                        $usersQuery->orderBy('last_name', 'asc');
-                        break;
-                    case 'email_desc':
-                        $usersQuery->orderBy('user_email', 'desc');
-                        break;
-                    case 'email_asc':
-                        $usersQuery->orderBy('user_email', 'asc');
-                        break;
-                    case 'date_asc':
-                        $usersQuery->orderBy('created_at', 'asc');
-                        break;
-                    case 'date_desc':
-                        $usersQuery->orderBy('created_at', 'desc');
-                        break;
-                    default:
-                        break;
+            $usersQuery = $usersQuery->buildColumnSearchQueryRequest($columnName, $searchColumnValue);
+        } else {
+            if ($request->has('search')) {
+                $search = $request->get('search');
+                if (!is_null($search) && $search !== "") {
+                    $usersQuery = $usersQuery->buildSearchQueryRequest($search);
                 }
             }
         }
-        return $usersQuery;
+
+        if ($request->has('sort')) {
+            $sort = $request->get('sort');
+            if (!is_null($sort) && $sort !== "") {
+                $sortBy = $this->mapSortColumnName($sort);
+                $usersQuery = $usersQuery->buildSortQueryRequest($sortBy);
+            }
+        }
+
+        $users = $usersQuery
+            ->select('id', 'first_name', 'last_name', 'user_email', 'created_at')
+            ->paginate(SELF::PER_PAGE);
+
+        $perPage = $users->perPage();
+
+        $currentPage = $users->currentPage();
+
+        $meta = [
+            "per_page" => $users->perPage(),
+            "to" => ($currentPage) * $perPage,
+            "total" => $users->total(),
+            "current_page" => $users->currentPage(),
+            "from" => ((($currentPage - 1) * $perPage) === 0) ? 1 : (($currentPage - 1) * $perPage),
+            "last_page" => $users->lastPage(),
+        ];
+
+        return ['data' => $users, 'meta' => $meta];
+    }
+
+    private function mapSortColumnName($requestedColumnName): array
+    {
+        $columnMappings = [
+            'fname_desc' => ['columnName' => 'first_name', 'orderBy' => 'desc'],
+            'fname_asc' => ['columnName' => 'first_name', 'orderBy' => 'asc'],
+            'lname_desc' => ['columnName' => 'last_name', 'orderBy' => 'desc'],
+            'lname_asc' => ['columnName' => 'last_name', 'orderBy' => 'asc'],
+            'email_desc' => ['columnName' => 'user_email', 'orderBy' => 'desc'],
+            'email_asc' => ['columnName' => 'user_email', 'orderBy' => 'asc'],
+            'date_desc' => ['columnName' => 'created_at', 'orderBy' => 'desc'],
+            'date_asc' => ['columnName' => 'created_at', 'orderBy' => 'asc'],
+        ];
+
+        if (array_key_exists($requestedColumnName, $columnMappings)) {
+            return $columnMappings[$requestedColumnName];
+        }
+
+        throw new \Exception('Column name should have existed at this point');
     }
 
     private function shouldSearchForColumn(Request $request): bool
