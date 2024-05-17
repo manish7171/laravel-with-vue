@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserBuilder extends Builder
 {
-    public function buildColumnSearchQueryRequest($columnName, $searchColumnValue)
+    public function buildColumnSearchQueryRequest($columnName, $searchColumnValue): Builder
     {
         return $this->where($columnName, 'like', '%' . $searchColumnValue . '%');
     }
 
-    public function buildSearchQueryRequest($search)
+    public function buildSearchQueryRequest($search): Builder
     {
         return $this->where(function ($query) use ($search) {
             $query->orWhere('first_name', 'like', '%' . $search . '%')
@@ -23,7 +23,7 @@ class UserBuilder extends Builder
         });
     }
 
-    public function buildSortQueryRequest($sortRequest)
+    public function buildSortQueryRequest($sortRequest): Builder
     {
         return $this->orderBy($sortRequest['columnName'], $sortRequest['orderBy']);
     }
