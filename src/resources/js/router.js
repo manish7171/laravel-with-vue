@@ -6,11 +6,6 @@ const routes = [
         name: "frontend",
         component: () => import("./pages/Users.vue"),
     },
-    {
-        path: "/frontend/testvue",
-        name: "testvue",
-        component: () => import("./pages/HomeRoute.vue"),
-    },
 ];
 export default createRouter({
     history: createWebHistory(),

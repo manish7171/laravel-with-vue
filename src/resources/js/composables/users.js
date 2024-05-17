@@ -1,5 +1,4 @@
 import { ref } from "vue";
-//import axios from "axios";
 
 export default function useUsers() {
     const users = ref({});
