@@ -312,10 +312,35 @@ const sortButtonClasses = computed(() => (isActive) => {
 });
 </script>
 <template>
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/frontend">UPFRONT</a>
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarCollapse"
+                aria-controls="navbarCollapse"
+                aria-expanded="false"
+                aria-label="Toggle navigation"
+            >
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                    <li class="nav-item">
+                        <a
+                            class="nav-link active"
+                            aria-current="page"
+                            href="/frontend"
+                            >Home</a
+                        >
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
     <div class="container">
-        <h1>User Listing</h1>
-        <!-- Modal -->
-
         <div class="d-flex justify-content-between">
             <!-- Button trigger modal -->
             <button
@@ -346,6 +371,7 @@ const sortButtonClasses = computed(() => (isActive) => {
                 <table class="table table-bordered table-striped fs--1 mb-0">
                     <thead class="bg-200 text-900">
                         <tr>
+                            <th>#</th>
                             <th>
                                 <div class="row">
                                     <div class="col">
@@ -700,7 +726,8 @@ const sortButtonClasses = computed(() => (isActive) => {
                         </tr>
                     </thead>
                     <tbody class="" v-if="usersCount > 0 && !isLoading">
-                        <tr v-for="user in users.data">
+                        <tr v-for="(user, index) in users.data">
+                            <td>{{ index + 1 }}</td>
                             <td class="name">{{ user.firstName }}</td>
                             <td class="name">{{ user.lastName }}</td>
                             <td class="email">{{ user.email }}</td>
@@ -725,6 +752,7 @@ const sortButtonClasses = computed(() => (isActive) => {
                     </tbody>
                     <tbody class="list" v-else-if="isLoading">
                         <tr>
+                            <td></td>
                             <td colspan="2">
                                 <div class="d-flex align-items-center">
                                     <strong role="status">Loading...</strong>
@@ -734,10 +762,14 @@ const sortButtonClasses = computed(() => (isActive) => {
                                     ></div>
                                 </div>
                             </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                     <tbody class="list" v-else>
                         <tr>
+                            <td></td>
                             <td>No results found!</td>
                             <td></td>
                             <td></td>
