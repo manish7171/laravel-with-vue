@@ -4,7 +4,7 @@ import useUsers from "../composables/users";
 import router from "../router";
 import { useRoute } from "vue-router";
 import { Bootstrap5Pagination } from "laravel-vue-pagination";
-import axios from "axios";
+//import axios from "axios";
 import CreateNewUserModal from "../components/modals/NewUser.vue";
 
 const route = useRoute();
@@ -725,11 +725,15 @@ const sortButtonClasses = computed(() => (isActive) => {
                     </tbody>
                     <tbody class="list" v-else-if="isLoading">
                         <tr>
-                            <td>Loading...</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td colspan="2">
+                                <div class="d-flex align-items-center">
+                                    <strong role="status">Loading...</strong>
+                                    <div
+                                        class="spinner-border ms-auto"
+                                        aria-hidden="true"
+                                    ></div>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                     <tbody class="list" v-else>
