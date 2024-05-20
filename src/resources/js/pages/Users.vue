@@ -6,6 +6,7 @@ import { useRoute } from "vue-router";
 import { Bootstrap5Pagination } from "laravel-vue-pagination";
 //import axios from "axios";
 import CreateNewUserModal from "../components/modals/NewUser.vue";
+import DeleteUserModal from "../components/modals/DeleteUser.vue";
 
 const route = useRoute();
 const { users, isLoading, getUsers, usersCount } = useUsers();
@@ -38,7 +39,7 @@ const editForm = reactive({
 });
 
 const deleteForm = reactive({
-    id: "",
+    id: null,
 });
 
 const state = reactive({
@@ -181,8 +182,18 @@ function openEditUserModal(id) {
     state.modal_edit_user.show();
 }
 
+const show = ref(0);
+
+const transition = (id) => {
+    console.log("transition Runn");
+    show.value = id;
+};
+
 function openDeleteUserModal(id) {
-    deleteForm.id = id;
+    transition(id);
+    console.log(id);
+    deleteForm.value.id = id;
+    //testDelete.value = id;
 
     state.modal_delete_user.show();
 }
@@ -917,8 +928,14 @@ const sortButtonClasses = computed(() => (isActive) => {
         </div>
     </div>
 
+    <DeleteUserModal
+        id="modal_delete_user"
+        :show="show"
+        :deleteUser="deleteForm"
+    >
+    </DeleteUserModal>
     <!-- Delete Modal-->
-    <div
+    <!-- <div
         class="modal fade"
         id="modal_delete_user"
         tabindex="-1"
@@ -957,5 +974,5 @@ const sortButtonClasses = computed(() => (isActive) => {
                 </form>
             </div>
         </div>
-    </div>
+    </div> -->
 </template>
