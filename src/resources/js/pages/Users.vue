@@ -4,28 +4,25 @@ import useUsers from "../composables/users";
 import router from "../router";
 import { useRoute } from "vue-router";
 import { Bootstrap5Pagination } from "laravel-vue-pagination";
-//import axios from "axios";
 import CreateNewUserModal from "../components/modals/NewUser.vue";
 import DeleteUserModal from "../components/modals/DeleteUser.vue";
+import EditUserModal from "../components/modals/EditUser.vue";
 
 const route = useRoute();
 const { users, isLoading, getUsers, usersCount } = useUsers();
-
-//const testStoreErrors = ref({});
-//const storeUserErrors = ref({});
 
 const updateErrors = ref({});
 
 // for general quick search input
 const quickSearchQuery = ref("");
 
-//column name we are searching for
+// column name we are searching for
 const columnNameSearchQuery = ref("");
 
-//value for column name for eg. first_name = test
+// value for column name for eg. first_name = test
 const columnValueSearchQuery = ref("");
 
-//ref to column search input fields
+// ref to column search input fields
 const searchInputFirstname = ref("");
 const searchInputLastname = ref("");
 const searchInputEmail = ref("");
@@ -64,28 +61,6 @@ const listUsers = async () => {
         searchColumnValue,
         searchValue,
     );
-};
-
-const updateFormOnSubmit = async (event) => {
-    const data = { ...editForm };
-    axios
-        .put("/api/user/" + data.id, data)
-        .then((response) => {
-            listUsers();
-            closeEditUserModal();
-        })
-        .catch((e) => {
-            if (e.response.status === 422) {
-                updateErrors.value = e.response.data.errors;
-            }
-        });
-};
-
-const deleteFormOnSubmit = async () => {
-    const data = { ...deleteForm };
-    await axios.delete("/api/user/" + data.id);
-    listUsers();
-    closeDeleteUserModal();
 };
 
 const handleQuickSearch = debounce((event) => {
@@ -182,19 +157,8 @@ function openEditUserModal(id) {
     state.modal_edit_user.show();
 }
 
-const show = ref(0);
-
-const transition = (id) => {
-    console.log("transition Runn");
-    show.value = id;
-};
-
 function openDeleteUserModal(id) {
-    transition(id);
-    console.log(id);
-    deleteForm.value.id = id;
-    //testDelete.value = id;
-
+    deleteForm.id = id;
     state.modal_delete_user.show();
 }
 
@@ -358,7 +322,7 @@ const sortButtonClasses = computed(() => (isActive) => {
                 type="button"
                 class="btn btn-primary"
                 data-bs-toggle="modal"
-                data-bs-target="#createNewUserModal"
+                data-bs-target="#modal_new_user"
             >
                 New User
             </button>
@@ -799,180 +763,24 @@ const sortButtonClasses = computed(() => (isActive) => {
 
     <!-- New User Modal-->
     <CreateNewUserModal
-        id="createNewUserModal"
+        id="modal_new_user"
         @list-users="listUsers"
     ></CreateNewUserModal>
 
-    <!-- Edit User Modal-->
-
-    <div
-        class="modal fade"
-        id="modal_edit_user"
-        tabindex="-1"
-        aria-labelledby="modal_edit_user"
-        aria-hidden="true"
-    >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit User</h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <form @submit.prevent="updateFormOnSubmit">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="firstname" class="form-label"
-                                >First Name</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.firstname ? 'is-invalid' : '',
-                                ]"
-                                id="firstname"
-                                name="firstname"
-                                v-model="editForm.firstname"
-                                aria-describedby="desc-firstname"
-                                required
-                            />
-                            <div
-                                v-if="updateErrors.firstname"
-                                class="invalid-feedback"
-                            >
-                                {{ updateErrors.firstname[0] }}
-                            </div>
-
-                            <div id="desc-email" class="form-text d-none">
-                                Edit your first name.
-                            </div>
-                            <label for="lastname" class="form-label"
-                                >Last Name</label
-                            >
-                            <input
-                                type="text"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.lastname ? 'is-invalid' : '',
-                                ]"
-                                id="lastname"
-                                name="lastname"
-                                v-model="editForm.lastname"
-                                aria-describedby="desc-lastname"
-                                required
-                            />
-                            <div
-                                v-if="updateErrors.lastname"
-                                class="invalid-feedback"
-                            >
-                                {{ updateErrors.lastname[0] }}
-                            </div>
-                            <div id="desc-email" class="form-text d-none">
-                                Edit your last name.
-                            </div>
-                            <label for="email" class="form-label">Email</label>
-                            <input
-                                type="email"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.email ? 'is-invalid' : '',
-                                ]"
-                                id="email"
-                                name="email"
-                                v-model="editForm.email"
-                                aria-describedby="desc-email"
-                                required
-                            />
-                            <div
-                                v-if="updateErrors.email"
-                                class="invalid-feedback"
-                            >
-                                {{ updateErrors.email[0] }}
-                            </div>
-                            <div id="desc-email" class="form-text d-none">
-                                Edit your email address.
-                            </div>
-                            <input
-                                type="hidden"
-                                class="form-control"
-                                :class="[
-                                    updateErrors.email ? 'is-invalid' : '',
-                                ]"
-                                id="id"
-                                name="id"
-                                v-model="editForm.id"
-                                aria-describedby="desc-email"
-                                required
-                            />
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                        >
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Update
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
+    <!-- Delete User Modal-->
     <DeleteUserModal
         id="modal_delete_user"
-        :show="show"
         :deleteUser="deleteForm"
+        @list-users="listUsers"
+        @close-delete-modal="closeDeleteUserModal"
     >
     </DeleteUserModal>
-    <!-- Delete Modal-->
-    <!-- <div
-        class="modal fade"
-        id="modal_delete_user"
-        tabindex="-1"
-        aria-labelledby="modal_delete_user"
-        aria-hidden="true"
+    <!-- Edit User Modal-->
+    <EditUserModal
+        id="modal_edit_user"
+        :editUser="editForm"
+        @list-users="listUsers"
+        @close-edit-modal="closeEditUserModal"
     >
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Delete User</h5>
-                    <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
-                    ></button>
-                </div>
-                <form @submit.prevent="deleteFormOnSubmit">
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            Are you sure you want to delete this user?
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button
-                            type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                        >
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            Delete
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div> -->
+    </EditUserModal>
 </template>

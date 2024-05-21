@@ -2,7 +2,6 @@
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 
-const props = defineProps({});
 const emit = defineEmits(["list-users"]);
 
 const form = reactive({
@@ -36,14 +35,14 @@ function closeNewUserModal() {
 
 onMounted(() => {
     // Initial Modals
-    state.modal_new_user = new bootstrap.Modal("#createNewUserModal", {});
+    state.modal_new_user = new bootstrap.Modal("#modal_new_user", {});
 });
 </script>
 
 <template>
     <div
         class="modal fade"
-        id="createNewUserModal"
+        id="modal_new_user"
         tabindex="-1"
         aria-labelledby="modal_new_user"
         aria-hidden="true"

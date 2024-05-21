@@ -3,64 +3,20 @@ import { ref, toRefs, reactive, onMounted, onUpdated, watch } from "vue";
 import axios from "axios";
 
 const props = defineProps({
-    show: {
-        type: Number,
-        required: true,
-    },
     deleteUser: {
         type: Object,
         required: true,
     },
 });
-const { show } = toRefs(props);
-const isShowing = ref(true);
+const { deleteUser } = toRefs(props);
 
-watch(show, () => {
-    console.log("show changes");
-    console.log(show);
-    isShowing.value = false;
-});
-//const props = defineProps({
-//    deleteUser: {
-//        type: Object,
-//        required: true,
-//    },
-//});
-//const emit = defineEmits(["list-users"]);
-//const { deleteUser } = toRefs(props);
+const emit = defineEmits(["list-users", "close-edit-modal"]);
 
-//const deleteUser = ref({ ...props.deleteUser }); // Create a reactive copy of the user data
-
-//const deleteFormOnSubmit = async () => {
-//    const data = { ...deleteUser };
-//    console.log(data);
-//    //await axios.delete("/api/user/" + data.id);
-//    //listUsers();
-//    //closeDeleteUserModal();
-//};
-
-//watch(deleteUser, () => {
-//    console.log("delete user chagnged");
-//    console.log(deleteUser.id);
-//});
-//watch(
-//    () => props.deleteUser,
-//    (newValue) => {
-//        console.log("prop value changed", prop.value);
-//        deleteUser.value = { ...newValue };
-//    },
-//);
-
-onUpdated(() => {
-    console.log("onupdate");
-});
-
-onMounted(() => {
-    console.log("detele user mounted");
-    //console.log(props.deleteUser);
-    // Initial Modals
-    //state.modal_new_user = new bootstrap.Modal("#createNewUserModal", {});
-});
+const deleteFormOnSubmit = async () => {
+    await axios.delete("/api/user/" + deleteUser.value.id);
+    emit("list-users");
+    emit("close-delete-modal");
+};
 </script>
 
 <template>

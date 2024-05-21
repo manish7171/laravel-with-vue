@@ -1,77 +1,38 @@
 <script setup>
-import { watch, ref, reactive, onMounted, defineProps } from "vue";
+import { watch, ref, toRefs, reactive, onMounted, defineProps } from "vue";
 import axios from "axios";
 
 const props = defineProps({
-    user: {
+    editUser: {
         type: Object,
         required: true,
     },
 });
 
-const editedUser = ref({ ...props.user }); // Create a reactive copy of the user data
+const emit = defineEmits(["list-users", "close-edit-modal"]);
 
-// Watch for changes in the props and update the editedUser accordingly
-watch(
-    () => props.user,
-    (newValue) => {
-        console.log("prop value changed", prop.value);
-        editedUser.value = { ...newValue };
-    },
-);
-
-const emit = defineEmits(["list-users"]);
-
-//const editFirstname = ref(props.user.firstname);
-//const editLastname = ref(props.user.lastname);
-//const editEmail = ref(props.user.email);
-//const editId = ref(props.user.id);
-//
-//const editForm = reactive({
-//    id: props.user.id,
-//    firstname: props.user.firstname,
-//    lastname: props.user.lastname,
-//    email: props.user.email,
-//});
-
-const state = reactive({
-    modal_edit_user: null,
-});
+const { editUser } = toRefs(props);
 
 const updateErrors = ref({});
 
 const updateFormOnSubmit = async (event) => {
-    const data = { ...editedUser };
-    console.log(data);
-    // axios
-    //     .put("/api/user/" + data.id, data)
-    //     .then((response) => {
-    //         listUsers();
-    //         closeEditUserModal();
-    //     })
-    //     .catch((e) => {
-    //         if (e.response.status === 422) {
-    //             updateErrors.value = e.response.data.errors;
-    //         }
-    //     });
+    const userId = editUser.value.id;
+    const firstname = editUser.value.firstname;
+    const lastname = editUser.value.lastname;
+    const email = editUser.value.email;
+    const data = { firstname: firstname, lastname: lastname, email: email };
+    axios
+        .put("/api/user/" + userId, data)
+        .then((response) => {
+            emit("list-users");
+            emit("close-edit-modal");
+        })
+        .catch((e) => {
+            if (e.response.status === 422) {
+                updateErrors.value = e.response.data.errors;
+            }
+        });
 };
-
-//function closeEditUserModal() {
-//    state.modal_edit_user.hide();
-//}
-
-onMounted(() => {
-    //console.log(editFirstname);
-    //console.log(editForm);
-    // Initial Modals
-    //state.modal_edit_user = new bootstrap.Modal("#modal_edit_user", {});
-    //editForm.value = {
-    //    id: user.id,
-    //    firstname: user.firstname,
-    //    lastname: user.lastname,
-    //    email: user.email,
-    //};
-});
 </script>
 
 <template>
@@ -86,7 +47,6 @@ onMounted(() => {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit User</h5>
-                    {{ editedUser }}
                     <button
                         type="button"
                         class="btn-close"
@@ -108,7 +68,7 @@ onMounted(() => {
                                 ]"
                                 id="firstname"
                                 name="firstname"
-                                v-model="editedUser.firstname"
+                                v-model="editUser.firstname"
                                 aria-describedby="desc-firstname"
                                 required
                             />
@@ -133,7 +93,7 @@ onMounted(() => {
                                 ]"
                                 id="lastname"
                                 name="lastname"
-                                v-model="editedUser.lastname"
+                                v-model="editUser.lastname"
                                 aria-describedby="desc-lastname"
                                 required
                             />
@@ -155,7 +115,7 @@ onMounted(() => {
                                 ]"
                                 id="email"
                                 name="email"
-                                v-model="editedUser.email"
+                                v-model="editUser.email"
                                 aria-describedby="desc-email"
                                 required
                             />
@@ -176,7 +136,7 @@ onMounted(() => {
                                 ]"
                                 id="id"
                                 name="id"
-                                v-model="editedUser.id"
+                                v-model="editUser.id"
                                 aria-describedby="desc-email"
                                 required
                             />
